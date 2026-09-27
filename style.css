@@ -238,3 +238,26 @@ body {
     font-size: 32px;
     margin-bottom: 10px;
 }
+
+/* Utilities for Auth Toggle */
+.hidden {
+    display: none !important;
+}
+
+.toggle-text {
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.toggle-link {
+    color: var(--accent-color);
+    cursor: pointer;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.toggle-link:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}

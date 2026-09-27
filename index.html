@@ -16,20 +16,50 @@
         <div class="blob blob-2"></div>
     </div>
     <div class="login-container">
-        <div class="glass-card">
-            <h2>Welcome Back</h2>
-            <p>Please enter your details to log in.</p>
-            <form id="login-form">
-                <div class="input-group">
-                    <input type="text" id="username" required autocomplete="off">
-                    <label for="username">Username</label>
-                </div>
-                <div class="input-group">
-                    <input type="password" id="password" required>
-                    <label for="password">Password</label>
-                </div>
-                <button type="submit" class="btn-primary">Log In</button>
-            </form>
+        <div class="glass-card" id="auth-card">
+            <!-- Login View -->
+            <div id="login-view">
+                <h2>Welcome Back</h2>
+                <p>Please enter your details to log in.</p>
+                <form id="login-form">
+                    <div class="input-group">
+                        <input type="text" id="login-username" required autocomplete="off">
+                        <label for="login-username">Username</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="login-password" required>
+                        <label for="login-password">Password</label>
+                    </div>
+                    <button type="submit" class="btn-primary">Log In</button>
+                </form>
+                <p class="toggle-text">Don't have an account? <span id="show-signup" class="toggle-link">Sign Up</span></p>
+            </div>
+
+            <!-- Signup View -->
+            <div id="signup-view" class="hidden">
+                <h2>Create Account</h2>
+                <p>Join us today! Please fill in your details.</p>
+                <form id="signup-form">
+                    <div class="input-group">
+                        <input type="email" id="signup-email" required autocomplete="off">
+                        <label for="signup-email">Email</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="signup-username" required autocomplete="off">
+                        <label for="signup-username">Username</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="signup-password" required>
+                        <label for="signup-password">Password</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="signup-confirm-password" required>
+                        <label for="signup-confirm-password">Confirm Password</label>
+                    </div>
+                    <button type="submit" class="btn-primary">Sign Up</button>
+                </form>
+                <p class="toggle-text">Already have an account? <span id="show-login" class="toggle-link">Log In</span></p>
+            </div>
         </div>
     </div>
     <script src="app.js"></script>
