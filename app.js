@@ -32,8 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (signupForm) {
         signupForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = document.getElementById('signup-email').value;
-            const username = document.getElementById('signup-username').value;
+            const email = document.getElementById('signup-email').value.trim();
+            const username = document.getElementById('signup-username').value.trim();
             const password = document.getElementById('signup-password').value;
             const confirmPassword = document.getElementById('signup-confirm-password').value;
             
@@ -42,8 +42,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Check if user already exists
-            const existingUser = usersDB.find(u => u.username === username || u.email === email);
+            // Check if user already exists (case-insensitive for username)
+            const existingUser = usersDB.find(u => 
+                u.username.toLowerCase() === username.toLowerCase() || 
+                u.email.toLowerCase() === email.toLowerCase()
+            );
+            
             if(existingUser) {
                 alert("User with this email or username already exists!");
                 return;
@@ -67,11 +71,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const usernameInput = document.getElementById('login-username').value;
+            const usernameInput = document.getElementById('login-username').value.trim();
             const passwordInput = document.getElementById('login-password').value;
             
-            // Check credentials against our "database"
-            const user = usersDB.find(u => u.username === usernameInput && u.password === passwordInput);
+            // Check credentials against our "database" (case-insensitive username)
+            const user = usersDB.find(u => 
+                u.username.toLowerCase() === usernameInput.toLowerCase() && 
+                u.password === passwordInput
+            );
 
             if(user) {
                 // Successful login
