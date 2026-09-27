@@ -21,6 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // We store an array of user objects: { email, username, password }
     let usersDB = JSON.parse(localStorage.getItem('usersDB')) || [];
 
+    // If there are absolutely no accounts created yet, default to the Sign Up page
+    if (usersDB.length === 0 && loginView && signupView) {
+        loginView.classList.add('hidden');
+        signupView.classList.remove('hidden');
+    }
+
     // Signup Logic
     const signupForm = document.getElementById('signup-form');
     if (signupForm) {
