@@ -13,6 +13,94 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="login-body">
+    <!-- CINEMATIC INTRO SCREEN (4 Shots) -->
+    <div id="intro-screen" class="intro-screen">
+        <!-- 4 Cinematic Shots with smooth Ken-Burns camera movement -->
+        <div class="intro-slide-container">
+            <div class="intro-slide active" id="intro-slide-0" data-caption="ACT I: AWAKENING IN THE SHADOWS" data-title="WHERE RAW POWER MEETS BESPOKE LUXURY">
+                <video autoplay muted loop playsinline class="intro-slide-video" id="intro-video-0">
+                    <source src="assets/kling_intro.mp4" type="video/mp4">
+                </video>
+                <img src="assets/shot1_headlights.jpg" alt="Headlights piercing smoke" class="intro-slide-fallback">
+                <div class="shot-vignette"></div>
+            </div>
+            <div class="intro-slide" id="intro-slide-1" data-caption="ACT II: THE ATELIER MASTERPIECE" data-title="ENGINEERED BEYOND HUMAN LIMITS">
+                <img src="assets/shot2_main.jpg" alt="Hypercar in underground garage">
+                <div class="shot-vignette"></div>
+            </div>
+            <div class="intro-slide" id="intro-slide-2" data-caption="ACT III: BESPOKE CARBON ARCHITECTURE" data-title="PRECISION IN EVERY MILLIMETER">
+                <img src="assets/shot3_wheel.jpg" alt="Forged wheel and blue carbon caliper">
+                <div class="shot-vignette"></div>
+            </div>
+            <div class="intro-slide" id="intro-slide-3" data-caption="ACT IV: BEYOND THE HORIZON" data-title="PURE ADRENALINE UNLEASHED">
+                <img src="assets/shot4_taillights.jpg" alt="LED taillights accelerating in tunnel">
+                <div class="shot-vignette"></div>
+            </div>
+        </div>
+
+        <!-- Cinema Letterbox Bars -->
+        <div class="cinema-letterbox letterbox-top"></div>
+        <div class="cinema-letterbox letterbox-bottom"></div>
+
+        <!-- Header: Sound Toggle & Skip -->
+        <div class="intro-top-bar">
+            <div class="brand-crest">
+                <i class="fas fa-bolt text-gold"></i>
+                <span>APEX <span class="gold-text">HYPERMOTORS</span></span>
+                <span class="intro-tag">ATELIER CINEMA</span>
+            </div>
+            <div class="intro-top-controls">
+                <button type="button" id="intro-sound-toggle" class="intro-sound-btn" title="Toggle Cinematic Sound">
+                    <i class="fas fa-volume-high" id="sound-icon"></i>
+                    <span id="sound-text">Sound: ON</span>
+                </button>
+                <button type="button" id="intro-skip-btn" class="intro-skip-btn">
+                    <span>SKIP INTRO</span>
+                    <i class="fas fa-forward ms-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Center Cinematic Title -->
+        <div class="intro-center-info">
+            <span class="shot-act-tag" id="intro-act-tag">ACT I: AWAKENING IN THE SHADOWS</span>
+            <h1 class="intro-title" id="intro-main-title">WHERE RAW POWER MEETS BESPOKE LUXURY</h1>
+            <p class="intro-tagline">14 prestigious marques. Instant digital settlement. Exclusive collector membership.</p>
+        </div>
+
+        <!-- Bottom Timeline and Enter CTA -->
+        <div class="intro-bottom-bar">
+            <div class="intro-timeline" id="intro-timeline">
+                <div class="timeline-step active" data-step="0">
+                    <span class="step-num">01</span>
+                    <span class="step-name">HEADLIGHTS</span>
+                    <div class="step-bar"><div class="step-fill" id="step-fill-0"></div></div>
+                </div>
+                <div class="timeline-step" data-step="1">
+                    <span class="step-num">02</span>
+                    <span class="step-name">ATELIER</span>
+                    <div class="step-bar"><div class="step-fill" id="step-fill-1"></div></div>
+                </div>
+                <div class="timeline-step" data-step="2">
+                    <span class="step-num">03</span>
+                    <span class="step-name">CARBON BRAKES</span>
+                    <div class="step-bar"><div class="step-fill" id="step-fill-2"></div></div>
+                </div>
+                <div class="timeline-step" data-step="3">
+                    <span class="step-num">04</span>
+                    <span class="step-name">LIGHT TRAILS</span>
+                    <div class="step-bar"><div class="step-fill" id="step-fill-3"></div></div>
+                </div>
+            </div>
+
+            <button type="button" id="intro-enter-btn" class="intro-enter-btn">
+                <span>ENTER VIP ATELIER</span>
+                <i class="fas fa-arrow-right ms-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Background glowing ambient lights for Auth page -->
     <div class="background-blobs">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
@@ -22,7 +110,7 @@
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <div class="login-container">
+    <div class="login-container" id="login-container">
         <!-- Apex Header Badge -->
         <div class="brand-header">
             <div class="brand-badge">
@@ -100,6 +188,9 @@
         </div>
 
         <div class="login-footer">
+            <button type="button" id="btn-replay-intro" class="btn-replay-intro">
+                <i class="fas fa-clapperboard text-gold me-1"></i> Watch Cinematic Intro
+            </button>
             <span><i class="fas fa-shield-halved text-gold"></i> 256-Bit Encrypted Atelier Access</span>
         </div>
     </div>

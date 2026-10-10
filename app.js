@@ -373,6 +373,179 @@ function playEngineRevAudio() {
 document.addEventListener('DOMContentLoaded', () => {
 
   // ========================================================
+  // 0. CINEMATIC 4-SHOT INTRO CONTROLLER (index.html)
+  // ========================================================
+  const introScreen = document.getElementById('intro-screen');
+  if (introScreen) {
+    const slides = document.querySelectorAll('.intro-slide');
+    const timelineSteps = document.querySelectorAll('.timeline-step');
+    const actTag = document.getElementById('intro-act-tag');
+    const mainTitle = document.getElementById('intro-main-title');
+    const soundToggleBtn = document.getElementById('intro-sound-toggle');
+    const soundIcon = document.getElementById('sound-icon');
+    const soundText = document.getElementById('sound-text');
+    const skipBtn = document.getElementById('intro-skip-btn');
+    const enterBtn = document.getElementById('intro-enter-btn');
+    const replayBtn = document.getElementById('btn-replay-intro');
+
+    let currentSlide = 0;
+    let soundEnabled = true;
+    let slideTimer = null;
+    let progressTimer = null;
+    const SLIDE_DURATION = 5000; // 5 seconds per shot
+
+    // Play subtle cinematic atmospheric synthesizer sweep
+    function playCinematicAtmosphere(index) {
+      if (!soundEnabled) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+
+        osc.type = index === 3 ? 'sawtooth' : 'sine';
+        const freqs = [55, 65, 82, 110];
+        osc.frequency.setValueAtTime(freqs[index] || 60, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime((freqs[index] || 60) * 1.5, ctx.currentTime + 0.8);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(250, ctx.currentTime);
+
+        gain.gain.setValueAtTime(0.001, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.3);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.2);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 2.2);
+      } catch (e) {}
+    }
+
+    // Go to specific shot index
+    function goToSlide(index) {
+      currentSlide = index;
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === index);
+      });
+
+      timelineSteps.forEach((step, i) => {
+        step.classList.toggle('active', i <= index);
+        const fill = document.getElementById(`step-fill-${i}`);
+        if (fill) {
+          fill.style.width = i < index ? '100%' : (i === index ? '100%' : '0%');
+        }
+      });
+
+      const activeSlide = slides[index];
+      if (activeSlide && actTag && mainTitle) {
+        actTag.textContent = activeSlide.getAttribute('data-caption');
+        mainTitle.textContent = activeSlide.getAttribute('data-title');
+      }
+
+      playCinematicAtmosphere(index);
+    }
+
+    // Progress bar animation & auto advancement
+    function startAutoSequence() {
+      stopAutoSequence();
+      let startTime = Date.now();
+
+      function updateFill() {
+        const elapsed = Date.now() - startTime;
+        const percent = Math.min(100, (elapsed / SLIDE_DURATION) * 100);
+        const activeFill = document.getElementById(`step-fill-${currentSlide}`);
+        if (activeFill) {
+          activeFill.style.width = percent + '%';
+        }
+
+        if (elapsed < SLIDE_DURATION) {
+          progressTimer = requestAnimationFrame(updateFill);
+        } else {
+          // Advance to next slide
+          if (currentSlide < slides.length - 1) {
+            goToSlide(currentSlide + 1);
+            startTime = Date.now();
+            progressTimer = requestAnimationFrame(updateFill);
+          } else {
+            // Reached end of 4th shot: loop back smoothly to shot 0
+            goToSlide(0);
+            startTime = Date.now();
+            progressTimer = requestAnimationFrame(updateFill);
+          }
+        }
+      }
+
+      progressTimer = requestAnimationFrame(updateFill);
+    }
+
+    function stopAutoSequence() {
+      if (progressTimer) cancelAnimationFrame(progressTimer);
+      if (slideTimer) clearTimeout(slideTimer);
+    }
+
+    // Exit Cinematic Screen with Supercar Rev Sound
+    function exitIntro() {
+      stopAutoSequence();
+      if (soundEnabled) {
+        playEngineRevAudio();
+      }
+      introScreen.classList.add('exiting');
+      setTimeout(() => {
+        introScreen.classList.add('hidden');
+        introScreen.classList.remove('exiting');
+      }, 750);
+    }
+
+    // Start intro sequence
+    goToSlide(0);
+    startAutoSequence();
+
+    // Sound Toggle Button
+    if (soundToggleBtn) {
+      soundToggleBtn.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        if (soundEnabled) {
+          soundIcon.className = 'fas fa-volume-high';
+          soundText.textContent = 'Sound: ON';
+          soundToggleBtn.classList.remove('muted');
+          playCinematicAtmosphere(currentSlide);
+        } else {
+          soundIcon.className = 'fas fa-volume-xmark';
+          soundText.textContent = 'Sound: OFF';
+          soundToggleBtn.classList.add('muted');
+        }
+      });
+    }
+
+    // Step clicks on timeline
+    timelineSteps.forEach(step => {
+      step.addEventListener('click', () => {
+        const targetStep = parseInt(step.getAttribute('data-step'), 10);
+        goToSlide(targetStep);
+        startAutoSequence();
+      });
+    });
+
+    if (skipBtn) skipBtn.addEventListener('click', exitIntro);
+    if (enterBtn) enterBtn.addEventListener('click', exitIntro);
+
+    // Replay button in login footer
+    if (replayBtn) {
+      replayBtn.addEventListener('click', () => {
+        introScreen.classList.remove('hidden');
+        introScreen.classList.remove('exiting');
+        goToSlide(0);
+        startAutoSequence();
+      });
+    }
+  }
+
+  // ========================================================
   // A. AUTHENTICATION CONTROLLER (index.html)
   // ========================================================
   const loginView = document.getElementById('login-view');
