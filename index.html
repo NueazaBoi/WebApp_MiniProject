@@ -3,65 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome Back | App</title>
-    <meta name="description" content="Secure login portal for the application.">
+    <title>Apex Hypermotors | VIP Member Portal</title>
+    <meta name="description" content="Exclusive VIP member portal for Apex Hypermotors luxury supercar collection.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="login-body">
     <div class="background-blobs">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
     </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
     <div class="login-container">
+        <!-- Apex Header Badge -->
+        <div class="brand-header">
+            <div class="brand-badge">
+                <i class="fas fa-bolt brand-icon"></i>
+                <span class="brand-title">APEX <span class="gold-text">HYPERMOTORS</span></span>
+            </div>
+            <p class="brand-tagline">Elite Supercar Atelier & Private Collectors Club</p>
+        </div>
+
         <div class="glass-card" id="auth-card">
             <!-- Login View -->
             <div id="login-view">
-                <h2>Welcome Back</h2>
-                <p>Please enter your details to log in.</p>
+                <h2>VIP Member Login</h2>
+                <p>Access your private garage and digital wallet.</p>
                 <form id="login-form">
                     <div class="input-group">
-                        <input type="text" id="login-username" required autocomplete="off">
-                        <label for="login-username">Username</label>
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" id="login-username" required autocomplete="off" placeholder=" ">
+                        <label for="login-username">Username or Collector ID</label>
                     </div>
                     <div class="input-group">
-                        <input type="password" id="login-password" required>
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="login-password" required placeholder=" ">
                         <label for="login-password">Password</label>
+                        <button type="button" class="pw-toggle-btn" data-target="login-password" aria-label="Toggle password">
+                            <i class="far fa-eye"></i>
+                        </button>
                     </div>
-                    <button type="submit" class="btn-primary">Log In</button>
+                    <button type="submit" class="btn-primary">
+                        <span>Authenticate & Enter</span>
+                        <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
                 </form>
-                <p class="toggle-text">Don't have an account? <span id="show-signup" class="toggle-link">Sign Up</span></p>
+                <p class="toggle-text">New Collector? <span id="show-signup" class="toggle-link">Register VIP Membership</span></p>
             </div>
 
             <!-- Signup View -->
             <div id="signup-view" class="hidden">
-                <h2>Create Account</h2>
-                <p>Join us today! Please fill in your details.</p>
+                <h2>VIP Registration</h2>
+                <p>Join the elite circle. Includes $999T App Pocket Money!</p>
                 <form id="signup-form">
                     <div class="input-group">
-                        <input type="email" id="signup-email" required autocomplete="off">
-                        <label for="signup-email">Email</label>
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="signup-email" required autocomplete="off" placeholder=" ">
+                        <label for="signup-email">Official Email</label>
                     </div>
                     <div class="input-group">
-                        <input type="text" id="signup-username" required autocomplete="off">
-                        <label for="signup-username">Username</label>
+                        <i class="fas fa-user-tag input-icon"></i>
+                        <input type="text" id="signup-username" required autocomplete="off" placeholder=" ">
+                        <label for="signup-username">Collector Username</label>
                     </div>
                     <div class="input-group">
-                        <input type="password" id="signup-password" required>
-                        <label for="signup-password">Password</label>
+                        <i class="fas fa-key input-icon"></i>
+                        <input type="password" id="signup-password" required placeholder=" ">
+                        <label for="signup-password">Security Password</label>
+                        <button type="button" class="pw-toggle-btn" data-target="signup-password" aria-label="Toggle password">
+                            <i class="far fa-eye"></i>
+                        </button>
                     </div>
                     <div class="input-group">
-                        <input type="password" id="signup-confirm-password" required>
+                        <i class="fas fa-shield-alt input-icon"></i>
+                        <input type="password" id="signup-confirm-password" required placeholder=" ">
                         <label for="signup-confirm-password">Confirm Password</label>
+                        <button type="button" class="pw-toggle-btn" data-target="signup-confirm-password" aria-label="Toggle password">
+                            <i class="far fa-eye"></i>
+                        </button>
                     </div>
-                    <button type="submit" class="btn-primary">Sign Up</button>
+                    <button type="submit" class="btn-primary">
+                        <span>Create VIP Account</span>
+                        <i class="fas fa-gem ms-2"></i>
+                    </button>
                 </form>
-                <p class="toggle-text">Already have an account? <span id="show-login" class="toggle-link">Log In</span></p>
+                <p class="toggle-text">Already a Member? <span id="show-login" class="toggle-link">Sign In</span></p>
             </div>
         </div>
+
+        <div class="login-footer">
+            <span><i class="fas fa-shield-halved text-gold"></i> 256-Bit Encrypted Atelier Access</span>
+        </div>
     </div>
+
     <script src="app.js"></script>
 </body>
 </html>

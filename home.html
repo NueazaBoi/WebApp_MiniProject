@@ -3,24 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home | Dashboard</title>
-    <meta name="description" content="User dashboard and home page.">
+    <title>VIP Atelier & Garage | Apex Hypermotors</title>
+    <meta name="description" content="Exclusive VIP Dashboard, Supercar Showroom, and Private Garage for Apex Hypermotors collectors.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="home-body">
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Background glowing ambient lights -->
+    <div class="ambient-glow glow-top"></div>
+    <div class="ambient-glow glow-bottom"></div>
+
+    <!-- NAVIGATION BAR -->
     <nav class="glass-nav">
-        <div class="nav-brand">MyApp</div>
-        <button id="logout-btn" class="btn-secondary">Logout</button>
-    </nav>
-    <main class="dashboard-container">
-        <div class="glass-card welcome-card">
-            <h1>Welcome to the Dashboard, <span id="user-display">User</span>!</h1>
-            <p>This is your premium homepage. Everything you need is right here.</p>
+        <div class="nav-brand">
+            <i class="fas fa-bolt brand-icon"></i>
+            <span>APEX <span class="gold-text">HYPERMOTORS</span></span>
+            <span class="vip-tag">VIP ATELIER</span>
         </div>
+
+        <div class="nav-links">
+            <button class="nav-tab-btn active" id="btn-tab-showroom">
+                <i class="fas fa-car-side"></i>
+                <span>Showroom</span>
+            </button>
+            <button class="nav-tab-btn" id="btn-tab-garage">
+                <i class="fas fa-warehouse"></i>
+                <span>My Garage</span>
+                <span class="badge-count" id="nav-garage-count">0</span>
+            </button>
+        </div>
+
+        <div class="nav-actions">
+            <!-- Pocket Money Wallet Pill -->
+            <div class="wallet-pill" title="Click to manage pocket money" id="wallet-pill-btn">
+                <span class="wallet-pulse"></span>
+                <i class="fas fa-wallet text-gold"></i>
+                <span id="navbar-wallet-amount">$999,999,999,999,999</span>
+            </div>
+
+            <!-- User Profile Dropdown / Pill -->
+            <div class="user-pill">
+                <div class="user-avatar" id="user-avatar-initial">U</div>
+                <div class="user-info">
+                    <span class="user-name" id="user-display">User</span>
+                    <span class="user-tier">Diamond Collector</span>
+                </div>
+            </div>
+
+            <button id="logout-btn" class="btn-logout" title="Sign Out">
+                <i class="fas fa-arrow-right-from-bracket"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main class="dashboard-wrapper">
+        <!-- VIP Metrics Header Banner -->
+        <section class="vip-hero-banner glass-panel">
+            <div class="hero-welcome">
+                <div class="hero-badge">
+                    <i class="fas fa-crown text-gold"></i>
+                    <span>Official Member Atelier</span>
+                </div>
+                <h1>Welcome Back, <span class="gold-text" id="welcome-username">Collector</span></h1>
+                <p>Curate your private fleet across all 14 elite marques. Instant digital settlement via App Pocket Money.</p>
+            </div>
+
+            <div class="hero-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-coins text-gold"></i></div>
+                    <div class="stat-data">
+                        <span class="stat-label">Pocket Money</span>
+                        <span class="stat-value text-gold" id="stat-wallet-balance">$999,999,999,999,999</span>
+                    </div>
+                    <button class="stat-action-btn" id="quick-deposit-btn" title="Add $100M fake money">+ $100M</button>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-gauge-high text-cyan"></i></div>
+                    <div class="stat-data">
+                        <span class="stat-label">Owned Vehicles</span>
+                        <span class="stat-value" id="stat-garage-count">0</span>
+                    </div>
+                    <button class="stat-action-btn" id="view-garage-stat-btn">View Fleet</button>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-gem text-purple"></i></div>
+                    <div class="stat-data">
+                        <span class="stat-label">Fleet Net Value</span>
+                        <span class="stat-value text-purple" id="stat-fleet-value">$0</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-award text-gold"></i></div>
+                    <div class="stat-data">
+                        <span class="stat-label">Marques Unlocked</span>
+                        <span class="stat-value">14 / 14</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 1: SUPERCAR SHOWROOM -->
+        <section id="view-showroom" class="view-section">
+            <div class="section-header">
+                <div>
+                    <h2><i class="fas fa-fire-flame-curved text-gold"></i> Elite Showroom Collection</h2>
+                    <p class="section-sub">Sorted by price (Highest to Lowest by default) across 14 prestigious marques.</p>
+                </div>
+                <div class="catalog-badge">
+                    <span id="showing-count">14</span> Supercars Available
+                </div>
+            </div>
+
+            <!-- Brand Filter Pills -->
+            <div class="brand-filters-scroll" id="brand-pills-container">
+                <!-- Injected via JavaScript -->
+            </div>
+
+            <!-- Controls: Search, Sort, Price Slider -->
+            <div class="controls-toolbar glass-panel">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="car-search-input" placeholder="Search by model, engine, or marque...">
+                </div>
+
+                <div class="filter-controls">
+                    <div class="sort-select-wrapper">
+                        <label for="car-sort-select"><i class="fas fa-arrow-down-wide-short"></i> Sort:</label>
+                        <select id="car-sort-select">
+                            <option value="price-desc" selected>Price: Highest to Lowest</option>
+                            <option value="price-asc">Price: Lowest to Highest</option>
+                            <option value="hp-desc">Horsepower: Highest First</option>
+                            <option value="speed-desc">Top Speed: Fastest First</option>
+                        </select>
+                    </div>
+
+                    <div class="price-slider-group">
+                        <label for="price-range-slider">Max: <span class="gold-text" id="price-slider-label">$5,000,000</span></label>
+                        <input type="range" id="price-range-slider" min="200000" max="5000000" step="100000" value="5000000">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supercars Grid -->
+            <div class="supercars-grid" id="supercars-grid">
+                <!-- Rendered dynamically via JavaScript -->
+            </div>
+        </section>
+
+        <!-- VIEW 2: MY PRIVATE GARAGE -->
+        <section id="view-garage" class="view-section hidden">
+            <div class="section-header">
+                <div>
+                    <h2><i class="fas fa-warehouse text-gold"></i> My Private Hypercar Garage</h2>
+                    <p class="section-sub">Your personal collection acquired via your digital account.</p>
+                </div>
+                <button class="btn-primary-sm" id="garage-go-showroom-btn">
+                    <i class="fas fa-plus"></i> Acquire New Supercar
+                </button>
+            </div>
+
+            <div id="garage-grid" class="garage-grid">
+                <!-- Injected via JavaScript -->
+            </div>
+
+            <!-- Empty Garage Placeholder -->
+            <div id="empty-garage-state" class="empty-garage-card glass-panel hidden">
+                <div class="empty-icon"><i class="fas fa-car-tunnel"></i></div>
+                <h3>Your Garage is Currently Empty</h3>
+                <p>You have not acquired any vehicles yet. Explore our 14-marque showroom and acquire your dream hypercar with your $999T digital pocket money!</p>
+                <button class="btn-primary" id="btn-empty-browse-showroom">
+                    <i class="fas fa-compass me-2"></i> Browse Showroom Now
+                </button>
+            </div>
+        </section>
     </main>
+
+    <!-- ATELIER ORDER / CONFIGURE MODAL -->
+    <div id="atelier-modal" class="modal-overlay hidden">
+        <div class="modal-card glass-panel">
+            <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+            
+            <div class="modal-layout">
+                <!-- Vehicle Preview Left -->
+                <div class="modal-preview-side">
+                    <div class="modal-img-container">
+                        <img id="modal-car-img" src="" alt="Supercar">
+                        <span class="modal-badge" id="modal-car-badge">Flagship</span>
+                    </div>
+
+                    <div class="modal-specs-row">
+                        <div class="spec-pill">
+                            <span class="label">Top Speed</span>
+                            <span class="val" id="modal-spec-speed">340 km/h</span>
+                        </div>
+                        <div class="spec-pill">
+                            <span class="label">0-100 km/h</span>
+                            <span class="val" id="modal-spec-acc">2.5s</span>
+                        </div>
+                        <div class="spec-pill">
+                            <span class="label">Power</span>
+                            <span class="val" id="modal-spec-hp">986 HP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customizer Right -->
+                <div class="modal-config-side">
+                    <div class="modal-header-info">
+                        <span class="marque-tag" id="modal-car-brand">FERRARI</span>
+                        <h2 id="modal-car-name">Ferrari SF90 Stradale</h2>
+                        <div class="modal-price gold-text" id="modal-car-price">$3,850,000</div>
+                    </div>
+
+                    <!-- Exterior Coachwork Color Picker -->
+                    <div class="config-section">
+                        <label class="config-label">
+                            <span>Bespoke Exterior Coachwork:</span>
+                            <span class="active-color-name" id="modal-selected-color-name">Rosso Corsa Red</span>
+                        </label>
+                        <div class="swatches-container" id="modal-swatches">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Payment Summary Box -->
+                    <div class="checkout-summary-box">
+                        <div class="summary-line">
+                            <span>Vehicle MSRP</span>
+                            <span id="summary-msrp">$3,850,000</span>
+                        </div>
+                        <div class="summary-line">
+                            <span>VIP Import & Tax</span>
+                            <span class="text-success">$0 (Complimentary VIP)</span>
+                        </div>
+                        <div class="summary-line total-line">
+                            <span>Total Settlement</span>
+                            <span class="gold-text" id="summary-total">$3,850,000</span>
+                        </div>
+                        <div class="summary-balance-check">
+                            <span>Your Available Wallet:</span>
+                            <span class="text-cyan" id="modal-user-wallet">$999,999,999,999,999</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="modal-actions">
+                        <button class="btn-primary" id="btn-confirm-purchase">
+                            <i class="fas fa-check-double me-2"></i> Confirm Acquisition & Add to Garage
+                        </button>
+                        <button class="btn-secondary" id="btn-cancel-modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SPECS INSPECTION MODAL (For garage cars) -->
+    <div id="specs-modal" class="modal-overlay hidden">
+        <div class="modal-card modal-card-sm glass-panel">
+            <button class="modal-close-btn" id="specs-modal-close">&times;</button>
+            <div class="specs-modal-content">
+                <img id="specs-modal-img" src="" alt="Car">
+                <h3 id="specs-modal-name">Vehicle Specs</h3>
+                <p class="text-gold" id="specs-modal-brand"></p>
+                <div class="specs-details-list" id="specs-details-list"></div>
+                <button class="btn-primary" id="specs-modal-rev-btn">
+                    <i class="fas fa-volume-high me-2"></i> Rev Engine (Audio)
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
