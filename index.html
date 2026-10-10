@@ -29,11 +29,40 @@
                 <div class="shot-vignette"></div>
             </div>
             <div class="intro-slide" id="intro-slide-2" data-caption="ACT III: BESPOKE CARBON ARCHITECTURE" data-title="PRECISION IN EVERY MILLIMETER">
-                <img src="assets/shot3_wheel.jpg" alt="Forged wheel and blue carbon caliper">
+                <div class="wheel-spin-wrapper">
+                    <img src="assets/shot3_wheel.jpg" alt="Forged wheel and blue carbon caliper" class="wheel-img">
+                    <div class="rotor-glow-ring"></div>
+                </div>
                 <div class="shot-vignette"></div>
             </div>
             <div class="intro-slide" id="intro-slide-3" data-caption="ACT IV: BEYOND THE HORIZON" data-title="PURE ADRENALINE UNLEASHED">
-                <img src="assets/shot4_taillights.jpg" alt="LED taillights accelerating in tunnel">
+                <div class="driving-car-wrapper" id="driving-car-wrapper">
+                    <img src="assets/shot4_taillights.jpg" alt="LED taillights accelerating in tunnel" class="driving-car-img" id="driving-car-img">
+                    
+                    <!-- Dynamic Speed Canvas (Light trails & tunnel motion) -->
+                    <canvas id="driving-speed-canvas" class="driving-speed-canvas"></canvas>
+
+                    <!-- Twin Exhaust Flames -->
+                    <div class="exhaust-flame-system">
+                        <div class="flame-plume flame-center"></div>
+                    </div>
+
+                    <!-- Digital Telemetry HUD -->
+                    <div class="driving-telemetry-hud">
+                        <div class="hud-top">
+                            <span class="hud-tag"><i class="fas fa-gauge-simple-high text-gold me-1"></i> LAUNCH TELEMETRY</span>
+                            <span class="hud-mode text-cyan">TRACK MODE • V10 HYBRID</span>
+                        </div>
+                        <div class="hud-speed-display">
+                            <span class="hud-speed-val" id="hud-live-speed">324</span>
+                            <span class="hud-speed-unit">KM/H</span>
+                        </div>
+                        <div class="hud-rpm-bar">
+                            <div class="hud-rpm-fill" id="hud-rpm-fill"></div>
+                        </div>
+                        <div class="hud-gear">GEAR <span class="gold-text">7</span> • 8,950 RPM</div>
+                    </div>
+                </div>
                 <div class="shot-vignette"></div>
             </div>
         </div>
@@ -93,10 +122,16 @@
                 </div>
             </div>
 
-            <button type="button" id="intro-enter-btn" class="intro-enter-btn">
-                <span>ENTER VIP ATELIER</span>
-                <i class="fas fa-arrow-right ms-2"></i>
-            </button>
+            <div class="intro-actions-group">
+                <button type="button" id="intro-boost-btn" class="intro-boost-btn" title="Click or Hold to Accelerate to 340+ km/h">
+                    <i class="fas fa-fire text-gold"></i>
+                    <span id="boost-btn-text">ACCELERATE</span>
+                </button>
+                <button type="button" id="intro-enter-btn" class="intro-enter-btn">
+                    <span>ENTER VIP ATELIER</span>
+                    <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
         </div>
     </div>
 

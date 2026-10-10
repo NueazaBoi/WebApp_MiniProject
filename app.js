@@ -534,6 +534,165 @@ document.addEventListener('DOMContentLoaded', () => {
     if (skipBtn) skipBtn.addEventListener('click', exitIntro);
     if (enterBtn) enterBtn.addEventListener('click', exitIntro);
 
+    // ========================================================
+    // DYNAMIC DRIVING SIMULATOR (Canvas Speedlines & Throttle)
+    // ========================================================
+    const speedCanvas = document.getElementById('driving-speed-canvas');
+    const drivingWrapper = document.getElementById('driving-car-wrapper');
+    const boostBtn = document.getElementById('intro-boost-btn');
+    const hudSpeed = document.getElementById('hud-live-speed');
+    const hudRpmFill = document.getElementById('hud-rpm-fill');
+
+    let isBoosting = false;
+    let currentSpeed = 324;
+    let targetSpeed = 324;
+
+    // Interactive Accelerator / Boost Button
+    function startBoost() {
+      isBoosting = true;
+      targetSpeed = 398;
+      if (drivingWrapper) drivingWrapper.classList.add('boosted');
+      if (boostBtn) {
+        boostBtn.classList.add('active');
+        boostBtn.innerHTML = '<i class="fas fa-bolt text-gold"></i> <span>NITROUS ACTIVE!</span>';
+      }
+      if (soundEnabled) {
+        playTurboAccelerationAudio();
+      }
+    }
+
+    function endBoost() {
+      isBoosting = false;
+      targetSpeed = 324;
+      if (drivingWrapper) drivingWrapper.classList.remove('boosted');
+      if (boostBtn) {
+        boostBtn.classList.remove('active');
+        boostBtn.innerHTML = '<i class="fas fa-fire text-gold"></i> <span>ACCELERATE</span>';
+      }
+    }
+
+    if (boostBtn) {
+      boostBtn.addEventListener('mousedown', startBoost);
+      boostBtn.addEventListener('mouseup', endBoost);
+      boostBtn.addEventListener('mouseleave', endBoost);
+      boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startBoost(); }, { passive: false });
+      boostBtn.addEventListener('touchend', endBoost);
+    }
+
+    // High-pitched turbo whistle & exhaust fire sound synthesis
+    function playTurboAccelerationAudio() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+
+        // High turbo spool whistle
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(280, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.8);
+
+        gain.gain.setValueAtTime(0.001, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 1.2);
+
+        // Exhaust pop at 0.5s
+        setTimeout(() => {
+          try {
+            const popOsc = ctx.createOscillator();
+            const popGain = ctx.createGain();
+            popOsc.type = 'triangle';
+            popOsc.frequency.setValueAtTime(80, ctx.currentTime);
+            popGain.gain.setValueAtTime(0.25, ctx.currentTime);
+            popGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+            popOsc.connect(popGain);
+            popGain.connect(ctx.destination);
+            popOsc.start();
+            popOsc.stop(ctx.currentTime + 0.2);
+          } catch(e) {}
+        }, 500);
+      } catch (e) {}
+    }
+
+    // 60FPS Tunnel Speedlines Engine
+    if (speedCanvas) {
+      const ctx = speedCanvas.getContext('2d');
+      let lines = [];
+      const numLines = 65;
+
+      function resizeCanvas() {
+        speedCanvas.width = speedCanvas.clientWidth || window.innerWidth;
+        speedCanvas.height = speedCanvas.clientHeight || window.innerHeight;
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      for (let i = 0; i < numLines; i++) {
+        lines.push({
+          x: Math.random() * speedCanvas.width,
+          y: Math.random() * speedCanvas.height,
+          len: 40 + Math.random() * 120,
+          speed: 15 + Math.random() * 35,
+          color: Math.random() > 0.4 ? 'rgba(255, 51, 75, ' : 'rgba(255, 255, 255, '
+        });
+      }
+
+      function animateDrivingScene() {
+        // Only run when slide 3 (tunnel shot) is visible
+        if (currentSlide === 3) {
+          ctx.clearRect(0, 0, speedCanvas.width, speedCanvas.height);
+
+          // Update smooth live speedometer
+          if (isBoosting) {
+            currentSpeed += (targetSpeed - currentSpeed) * 0.12;
+          } else {
+            currentSpeed += (targetSpeed - currentSpeed) * 0.06;
+          }
+          if (hudSpeed) {
+            hudSpeed.textContent = Math.round(currentSpeed);
+          }
+          if (hudRpmFill) {
+            const rpmPercent = isBoosting ? 98 : 82 + Math.sin(Date.now() / 200) * 3;
+            hudRpmFill.style.width = rpmPercent + '%';
+          }
+
+          const multiplier = isBoosting ? 2.5 : 1.0;
+
+          // Draw fast tunnel light streaks
+          for (let l of lines) {
+            l.x += (l.x - speedCanvas.width / 2) * 0.04 * multiplier;
+            l.y += (l.y - speedCanvas.height / 2) * 0.03 * multiplier;
+            l.len += 2.5 * multiplier;
+
+            const alpha = Math.min(0.9, (l.len / 180));
+            ctx.beginPath();
+            ctx.strokeStyle = l.color + alpha + ')';
+            ctx.lineWidth = isBoosting ? 3 : 1.8;
+            ctx.moveTo(l.x, l.y);
+            ctx.lineTo(l.x + (l.x > speedCanvas.width / 2 ? l.len : -l.len), l.y + (l.len * 0.3));
+            ctx.stroke();
+
+            // Reset lines that escape screen
+            if (l.x < -100 || l.x > speedCanvas.width + 100 || l.y < -100 || l.y > speedCanvas.height + 100) {
+              l.x = (speedCanvas.width / 2) + (Math.random() - 0.5) * 180;
+              l.y = (speedCanvas.height / 2) + (Math.random() - 0.5) * 140;
+              l.len = 20;
+            }
+          }
+        }
+
+        requestAnimationFrame(animateDrivingScene);
+      }
+
+      animateDrivingScene();
+    }
+
     // Replay button in login footer
     if (replayBtn) {
       replayBtn.addEventListener('click', () => {

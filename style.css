@@ -1952,3 +1952,244 @@ body {
     }
 }
 
+/* ========================================================
+   11. DYNAMIC DRIVING SIMULATION & TELEMETRY HUD
+   ======================================================== */
+.intro-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.intro-boost-btn {
+    padding: 16px 26px;
+    background: rgba(255, 51, 75, 0.15);
+    border: 1px solid rgba(255, 51, 75, 0.5);
+    color: #fff;
+    border-radius: 40px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(255, 51, 75, 0.3);
+}
+
+.intro-boost-btn:hover {
+    background: linear-gradient(135deg, #ff334b 0%, #e11d48 100%);
+    box-shadow: 0 6px 25px rgba(255, 51, 75, 0.6);
+    transform: translateY(-2px);
+}
+
+.intro-boost-btn.active {
+    background: linear-gradient(135deg, #ff334b 0%, #e11d48 100%);
+    transform: scale(0.97);
+    box-shadow: 0 0 30px rgba(255, 51, 75, 0.8);
+}
+
+/* Wheel Spin Animation & Heated Carbon Rotor */
+.wheel-spin-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.wheel-spin-wrapper .wheel-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: wheelDriveBlur 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes wheelDriveBlur {
+    0% { transform: scale(1.02); filter: blur(0px); }
+    50% { transform: scale(1.025); filter: blur(0.6px); }
+    100% { transform: scale(1.02); filter: blur(0px); }
+}
+
+.rotor-glow-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    border: 14px solid rgba(255, 80, 0, 0.45);
+    filter: blur(14px);
+    box-shadow: 0 0 50px rgba(255, 60, 0, 0.7);
+    animation: rotorHeatPulse 1.8s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes rotorHeatPulse {
+    0% { opacity: 0.5; filter: blur(10px); }
+    100% { opacity: 0.95; filter: blur(18px); }
+}
+
+/* Driving Car Simulation (Tunnel Drive) */
+.driving-car-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.driving-car-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: roadRumble 0.1s infinite linear;
+}
+
+@keyframes roadRumble {
+    0% { transform: translate(0, 0) scale(1.03); }
+    25% { transform: translate(1.2px, -1.5px) scale(1.032); }
+    50% { transform: translate(-1.5px, 1.2px) scale(1.028); }
+    75% { transform: translate(1px, 1.4px) scale(1.031); }
+    100% { transform: translate(0, 0) scale(1.03); }
+}
+
+.driving-car-wrapper.boosted .driving-car-img {
+    animation: highSpeedRumble 0.05s infinite linear, carSurge 2s ease-out forwards;
+}
+
+@keyframes highSpeedRumble {
+    0% { transform: translate(0, 0) scale(1.06); filter: contrast(1.15); }
+    25% { transform: translate(2.5px, -2.5px) scale(1.065); }
+    50% { transform: translate(-2.5px, 2px) scale(1.055); }
+    75% { transform: translate(2px, 2.5px) scale(1.065); }
+    100% { transform: translate(0, 0) scale(1.06); }
+}
+
+@keyframes carSurge {
+    0% { transform: scale(1.03); }
+    50% { transform: scale(1.12); }
+    100% { transform: scale(1.08); }
+}
+
+/* Speed Lines Canvas */
+.driving-speed-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 4;
+}
+
+/* Exhaust Flame System */
+.exhaust-flame-system {
+    position: absolute;
+    bottom: 30.5%;
+    left: 42.5%;
+    transform: translateX(-50%);
+    z-index: 5;
+    pointer-events: none;
+}
+
+.flame-plume {
+    width: 24px;
+    height: 14px;
+    background: radial-gradient(ellipse at center, #ffffff 0%, #00d4ff 40%, #ff334b 75%, transparent 100%);
+    border-radius: 50%;
+    filter: blur(3px);
+    box-shadow: 0 0 25px #00d4ff, 0 0 40px #ff334b;
+    animation: flamePulse 0.12s infinite alternate;
+    opacity: 0.85;
+}
+
+.driving-car-wrapper.boosted .flame-plume {
+    width: 48px;
+    height: 22px;
+    opacity: 1;
+    filter: blur(4px);
+    box-shadow: 0 0 45px #00d4ff, 0 0 70px #ff334b, 0 0 90px #ff9900;
+}
+
+@keyframes flamePulse {
+    0% { transform: scale(0.85); opacity: 0.6; }
+    100% { transform: scale(1.3); opacity: 1; }
+}
+
+/* Digital Telemetry HUD */
+.driving-telemetry-hud {
+    position: absolute;
+    top: 80px;
+    right: 50px;
+    z-index: 15;
+    background: rgba(7, 11, 20, 0.85);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--glass-border-gold);
+    border-radius: 18px;
+    padding: 18px 24px;
+    min-width: 260px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.hud-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.hud-speed-display {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.hud-speed-val {
+    font-size: 44px;
+    font-weight: 800;
+    color: var(--accent-gold);
+    letter-spacing: -1px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.hud-speed-unit {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.hud-rpm-bar {
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.hud-rpm-fill {
+    width: 82%;
+    height: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #e5b94c 70%, #ff334b 100%);
+    box-shadow: 0 0 8px var(--accent-gold);
+    transition: width 0.1s linear;
+}
+
+.hud-gear {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+}
+
+
