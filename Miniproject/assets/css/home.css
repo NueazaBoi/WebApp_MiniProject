@@ -1,0 +1,270 @@
+/* ============================================================
+   CarVerse 3D | Home Page CSS
+   assets/css/home.css
+   ============================================================ */
+
+/* ── Intro Overlay ── */
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #020408;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 1s ease, visibility 1s ease;
+}
+.intro-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+#intro-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.intro-content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.intro-logo {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(3rem, 10vw, 7rem);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  background: linear-gradient(135deg, #fff 0%, #e8b84b 50%, #f5d06a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: logoPulse 2s ease-in-out infinite alternate;
+}
+.intro-logo span { color: #e8b84b; -webkit-text-fill-color: #e8b84b; }
+.intro-tagline {
+  font-size: 0.85rem;
+  letter-spacing: 0.4em;
+  color: rgba(255,255,255,0.4);
+  margin: 12px 0 24px;
+  text-transform: uppercase;
+}
+.intro-bar {
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #e8b84b, #f5d06a);
+  margin: 0 auto 16px;
+  border-radius: 2px;
+  animation: loadBar 2.5s ease forwards;
+}
+.intro-sub {
+  font-size: 0.8rem;
+  color: rgba(232,184,75,0.6);
+  letter-spacing: 0.1em;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.intro-skip {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  background: none;
+  border: 1px solid rgba(232,184,75,0.3);
+  border-radius: 20px;
+  padding: 8px 20px;
+  color: rgba(232,184,75,0.7);
+  font-size: 0.8rem;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.intro-skip:hover {
+  background: rgba(232,184,75,0.1);
+  color: #e8b84b;
+  border-color: #e8b84b;
+}
+@keyframes loadBar  { to { width: 260px; } }
+@keyframes logoPulse {
+  from { filter: drop-shadow(0 0 20px rgba(232,184,75,0.3)); }
+  to   { filter: drop-shadow(0 0 40px rgba(232,184,75,0.7)); }
+}
+
+/* ── Hero Section ── */
+.hero-section {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--grad-hero);
+}
+.hero-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 60% at 70% 50%, rgba(26,108,245,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 50% at 30% 40%, rgba(232,184,75,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-3d-wrap {
+  position: absolute;
+  right: -5%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 55%;
+  height: 80vh;
+  pointer-events: none;
+}
+#hero-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.hero-3d-glow {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 30%;
+  background: radial-gradient(ellipse, rgba(232,184,75,0.25) 0%, transparent 70%);
+  filter: blur(20px);
+  pointer-events: none;
+}
+.hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  padding-top: 80px;
+}
+.hero-text { max-width: 560px; }
+.hero-eyebrow {
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  color: var(--clr-accent);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  animation: fadeInUp 0.8s ease both;
+}
+.hero-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(2.8rem, 5vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  margin-bottom: 24px;
+  animation: fadeInUp 0.8s 0.1s ease both;
+}
+.hero-title-accent {
+  background: var(--grad-gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-desc {
+  color: var(--clr-muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin-bottom: 32px;
+  max-width: 480px;
+  animation: fadeInUp 0.8s 0.2s ease both;
+}
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  animation: fadeInUp 0.8s 0.3s ease both;
+}
+.hero-stats {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  animation: fadeInUp 0.8s 0.4s ease both;
+}
+.hero-stat { text-align: center; }
+.hero-stat-val {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--clr-accent);
+  line-height: 1;
+}
+.hero-stat-label {
+  font-size: 0.75rem;
+  color: var(--clr-muted);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Scroll Indicator ── */
+.scroll-indicator {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--clr-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  animation: fadeInUp 1s 1s ease both;
+}
+.scroll-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--clr-accent);
+  border-radius: 50%;
+  animation: scrollBounce 1.5s ease-in-out infinite;
+}
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50%       { transform: translateY(8px); opacity: 0.4; }
+}
+
+/* ── Brands Marquee ── */
+.brands-marquee {
+  overflow: hidden;
+  padding: 24px 0;
+  background: rgba(255,255,255,0.02);
+  border-top: 1px solid var(--clr-border);
+  border-bottom: 1px solid var(--clr-border);
+}
+.marquee-track {
+  display: flex;
+  gap: 0;
+  animation: marquee 20s linear infinite;
+  width: max-content;
+}
+.marquee-item {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--clr-muted);
+  padding: 0 48px;
+  position: relative;
+  transition: color 0.3s;
+}
+.marquee-item::after {
+  content: '·';
+  position: absolute;
+  right: 0;
+  color: var(--clr-accent);
+}
+.marquee-item:hover { color: var(--clr-accent); }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .hero-3d-wrap { display: none; }
+  .hero-text { max-width: 100%; }
+}
+@media (max-width: 600px) {
+  .hero-stats { gap: 20px; }
+  .hero-stat-val { font-size: 1.8rem; }
+}
