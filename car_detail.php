@@ -21,8 +21,17 @@ $stmt->execute([$carId]);
 $car = $stmt->fetch();
 if (!$car) { header('Location: search.php'); exit; }
 
+// ── โมเดล 3D: ใช้ค่าจากฐานข้อมูล ถ้าไม่มีให้ใช้ไฟล์ .glb ตามชื่อรุ่น ──
+$modelUrl = trim($car['model_3d_url'] ?? '');
+if ($modelUrl === '' && stripos($car['model_name'], 'fortuner') !== false) {
+    $modelUrl = 'assets/models/fortuner.glb';
+}
+
 // ── Booking POST ──
 $bookMsg = $bookError = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel') {
+    // Action cancel handling if needed
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'book') {
     requireLogin('login.php?redirect=car_detail.php?id=' . $carId);
     $bDate = $_POST['booking_date'] ?? '';
@@ -67,13 +76,25 @@ $related = $related->fetchAll();
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/search.css">
+  <link rel="stylesheet" href="assets/css/particles.css">
+  <script>!function(d){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("pfx-on");setTimeout(function(){window.__pfx||d.classList.remove("pfx-on")},3500)}(document.documentElement)</script>
+  <script src="assets/js/particles.js" defer></script>
+
+  <!-- ES Module Import Map สำหรับ Three.js -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="assets/js/car_viewer.js"></script>
+
   <style>
     .detail-grid{display:grid;grid-template-columns:1fr 420px;gap:40px;align-items:start;position:relative;z-index:1}
-    .car-image-wrap{border-radius:24px;overflow:hidden;border:1px solid rgba(31,200,255,.2);background:rgba(31,200,255,.03);position:relative;aspect-ratio:16/9}
-    .car-image-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s ease}
-    .car-image-wrap:hover img{transform:scale(1.04)}
-    .car-no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:6rem;opacity:.2;background:radial-gradient(circle,rgba(31,200,255,.08),transparent)}
-    .badge-status{display:inline-block;padding:5px 16px;border-radius:20px;font-size:.78rem;font-weight:700;position:absolute;top:16px;right:16px}
+    .car-image-wrap{border-radius:24px;overflow:hidden;border:1px solid rgba(31,200,255,.2);background:rgba(31,200,255,.03);position:relative;aspect-ratio:16/9;min-height:450px;}
+    .badge-status{display:inline-block;padding:5px 16px;border-radius:20px;font-size:.78rem;font-weight:700;position:absolute;top:16px;right:16px;z-index:10;}
 
     .info-panel{background:linear-gradient(145deg,rgba(31,200,255,.06),rgba(11,134,214,.02));border:1px solid rgba(31,200,255,.18);border-radius:24px;padding:32px;position:sticky;top:92px;backdrop-filter:blur(24px);box-shadow:0 4px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(31,200,255,.1)}
     .car-brand-tag{font-size:.72rem;color:#1fc8ff;font-weight:700;text-transform:uppercase;letter-spacing:.14em;margin-bottom:6px}
@@ -148,22 +169,26 @@ $related = $related->fetchAll();
 
   <div class="detail-grid">
 
-    <!-- ── LEFT: Image + Specs ── -->
+    <!-- ── LEFT: 360 Viewer + Specs ── -->
     <div>
-      <!-- Main Image -->
+      <!-- 3D 360 Viewer Container -->
       <div class="car-image-wrap">
-        <?php if ($car['image_url']): ?>
-          <img src="<?= htmlspecialchars($car['image_url']) ?>" alt="<?= htmlspecialchars($car['model_name']) ?>">
-        <?php else: ?>
-          <div class="car-no-img">🚗</div>
-        <?php endif; ?>
         <span class="badge-status badge-<?= $car['status'] ?>">
           <?= STATUS_LABELS[$car['status']] ?? $car['status'] ?>
         </span>
-        <?php if ($car['model_3d_url']): ?>
-        <span style="position:absolute;top:16px;left:16px;background:rgba(31,200,255,.85);color:#001018;font-size:.72rem;padding:4px 10px;border-radius:12px;font-weight:700;backdrop-filter:blur(4px);">3D</span>
-        <?php endif; ?>
+        
+        <!-- Element สำหรับเริ่มทำงานกับ car_viewer.js -->
+        <div data-car360 
+             data-color="<?= htmlspecialchars($car['color'] ?? '') ?>" 
+             data-model="<?= htmlspecialchars($modelUrl) ?>"
+             style="width:100%;height:100%;">
+        </div>
       </div>
+      <?php if ($modelUrl !== ''): ?>
+      <div style="font-size:.7rem;color:#8aa3b2;margin:8px 4px 0;text-align:right;">
+        3D model: "2025 Toyota Fortuner Sigma 4 Neo Drive" by Ddiaz Design (CC BY-NC-SA 4.0)
+      </div>
+      <?php endif; ?>
 
       <!-- Specs Table -->
       <div class="specs-section">
@@ -288,7 +313,6 @@ $related = $related->fetchAll();
       <div class="divider"></div>
       <a href="search.php" class="btn btn-ghost btn-full" style="display:flex;justify-content:center;text-decoration:none;">← กลับไปค้นหารถ</a>
     </aside>
-
   </div>
 </div>
 

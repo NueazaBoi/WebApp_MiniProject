@@ -76,6 +76,7 @@ $pageTitle = 'จัดการคำสั่งซื้อ';
 $pageDesc  = "คำสั่งซื้อทั้งหมด $total รายการ — ยืนยันการชำระเงินและส่งมอบรถ";
 $activeNav = 'orders';
 require 'includes/admin_header.php';
+echo '<link rel="stylesheet" href="assets/css/particles.css"><script>!function(d){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("pfx-on");setTimeout(function(){window.__pfx||d.classList.remove("pfx-on")},3500)}(document.documentElement)</script><script src="assets/js/particles.js" defer></script>';
 ?>
 
 <div class="stats-grid">

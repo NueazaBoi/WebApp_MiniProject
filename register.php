@@ -68,6 +68,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="description" content="สมัครสมาชิก CarVerse 3D ฟรี เพื่อเข้าถึงรถยนต์พรีเมียม">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/auth.css">
+  <link rel="stylesheet" href="assets/css/particles.css">
+  <script>!function(d){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("pfx-on");setTimeout(function(){window.__pfx||d.classList.remove("pfx-on")},3500)}(document.documentElement)</script>
+  <script src="assets/js/particles.js" defer></script>
 </head>
 <body class="auth-body">
 

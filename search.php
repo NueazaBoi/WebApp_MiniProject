@@ -11,8 +11,8 @@ $brand_id   = (int)($_GET['brand']    ?? 0);
 $type_id    = (int)($_GET['type']     ?? 0);
 $fuel       = $_GET['fuel']           ?? '';
 $trans      = $_GET['trans']          ?? '';
-$min_price  = (int)($_GET['min_price'] ?? 0);
-$max_price  = (int)($_GET['max_price'] ?? 0);
+$min_price  = (int)(str_replace(',', '', $_GET['min_price'] ?? 0));
+$max_price  = (int)(str_replace(',', '', $_GET['max_price'] ?? 0));
 $keyword    = trim($_GET['q']         ?? '');
 $sort       = $_GET['sort']           ?? 'newest';
 $page       = max(1, (int)($_GET['page'] ?? 1));
@@ -103,6 +103,7 @@ $pageHeading = 'ค้นหา <span class="text-accent">รถยนต์</sp
 $pageDesc    = 'รถยนต์พรีเมียมกว่า ' . $totalCount . ' คันรอให้คุณค้นพบ';
 $activeNav   = 'search';
 require 'includes/user_header.php';
+echo '<link rel="stylesheet" href="assets/css/particles.css"><script>!function(d){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("pfx-on");setTimeout(function(){window.__pfx||d.classList.remove("pfx-on")},3500)}(document.documentElement)</script><script src="assets/js/particles.js" defer></script>';
 ?>
 
 <?php if ($bookMsg):  ?><div class="alert alert-success" data-autohide="6000">✅ <?= e($bookMsg)  ?></div><?php endif; ?>
@@ -174,9 +175,9 @@ require 'includes/user_header.php';
         <div class="filter-group">
           <label class="filter-label">ช่วงราคา (บาท)</label>
           <div class="price-inputs">
-            <input type="number" name="min_price" class="form-control" placeholder="ต่ำสุด" value="<?= $min_price ?: '' ?>" min="0" step="10000">
+            <input type="text" name="min_price" class="form-control price-input" placeholder="ต่ำสุด" value="<?= $min_price ? number_format($min_price) : '' ?>">
             <span>-</span>
-            <input type="number" name="max_price" class="form-control" placeholder="สูงสุด" value="<?= $max_price ?: '' ?>" min="0" step="10000">
+            <input type="text" name="max_price" class="form-control price-input" placeholder="สูงสุด" value="<?= $max_price ? number_format($max_price) : '' ?>">
           </div>
         </div>
 
@@ -318,5 +319,23 @@ require 'includes/user_header.php';
     document.getElementById('modalCarName').textContent = carName;
     document.getElementById('bookingModal').classList.add('active');
   }
+
+  // ฟังก์ชันใส่คอมม่าคั่นราคาอัตโนมัติขณะพิมพ์
+  document.querySelectorAll('.price-input').forEach(input => {
+    input.addEventListener('input', function (e) {
+      let value = this.value.replace(/,/g, '');
+      if (!isNaN(value) && value !== '') {
+        this.value = Number(value).toLocaleString('en-US');
+      }
+    });
+
+    // ลบคอมม่าออกก่อนส่งฟอร์ม เพื่อให้ PHP รับค่าตัวเลขไปประมวลผลได้ถูกต้อง
+    input.form.addEventListener('submit', function() {
+      document.querySelectorAll('.price-input').forEach(el => {
+        el.value = el.value.replace(/,/g, '');
+      });
+    });
+  });
 </script>
-<?php require 'includes/user_footer.php'; ?>
+<script src="assets/js/main.js"></script>
+<?php require 'includes/user_footer.php'; ?>ฟ

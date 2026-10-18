@@ -1,0 +1,82 @@
+/* ============================================================
+   CarVerse 3D | Particle Effect CSS (ทุกหน้า)
+   assets/css/particles.css
+   ใช้คู่กับ assets/js/particles.js
+   ทุกกฎอยู่ใต้ html.pfx-on เท่านั้น (ถ้า JS ไม่ทำงานหรือผู้ใช้ปิดแอนิเมชัน หน้าจะแสดงปกติ)
+   ============================================================ */
+
+/* องค์ประกอบถูกซ่อนไว้ก่อน แล้ว JS เปิดจากล่างขึ้นบนด้วยเส้นสแกน */
+html.pfx-on :is(
+  .filter-sidebar,
+  .car-card,
+  .result-meta,
+  .pagination,
+  .t-card,
+  .t-item,
+  .t-empty,
+  .stat-card,
+  .stat-chip,
+  .booking-card,
+  .empty-state,
+  .panel,
+  .toolbar,
+  .profile-card,
+  .panel-box,
+  .info-panel,
+  .car-image-wrap,
+  .desc-section,
+  .booking-row,
+  .auth-feature,
+  .auth-form-inner .form-group,
+  .auth-switch,
+  .demo-hint
+):not(.modal-overlay *):not(.pfx-shown) {
+  opacity: 0 !important;
+  transition: none !important;
+}
+
+html.pfx-on :is(
+  .filter-sidebar,
+  .car-card,
+  .result-meta,
+  .pagination,
+  .t-card,
+  .t-item,
+  .t-empty,
+  .stat-card,
+  .stat-chip,
+  .booking-card,
+  .empty-state,
+  .panel,
+  .toolbar,
+  .profile-card,
+  .panel-box,
+  .info-panel,
+  .car-image-wrap,
+  .desc-section,
+  .booking-row,
+  .auth-feature,
+  .auth-form-inner .form-group,
+  .auth-switch,
+  .demo-hint
+):not(.modal-overlay *).pfx-run:not(.pfx-shown) {
+  opacity: 1 !important;
+}
+
+/* หัวข้อจริงซ่อนไว้ (ยังอยู่ใน DOM) ให้จุดแสดงแทน */
+html.pfx-on .page-header h1,
+html.pfx-on .auth-heading h1 {
+  opacity: 0;
+}
+
+/* คำบรรยายใต้หัวข้อ เฟดเข้าหลังตัวอักษรประกอบเสร็จ */
+html.pfx-on .page-header p {
+  position: relative;
+  z-index: 2;
+  animation: pfxFade 1s ease 1.4s both;
+}
+
+@keyframes pfxFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}

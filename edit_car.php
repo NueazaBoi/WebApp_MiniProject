@@ -67,6 +67,7 @@ if ($id) {
     $formAction  = 'edit_car.php?id=' . $id;
     $submitLabel = '💾 บันทึกการแก้ไข';
     require 'includes/admin_header.php';
+    echo '<link rel="stylesheet" href="assets/css/particles.css"><script>!function(d){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("pfx-on");setTimeout(function(){window.__pfx||d.classList.remove("pfx-on")},3500)}(document.documentElement)</script><script src="assets/js/particles.js" defer></script>';
     if (isset($errors['_'])): ?>
       <div class="alert alert-danger"><?= e($errors['_']) ?></div>
     <?php elseif ($errors): ?>
@@ -116,6 +117,7 @@ $pageTitle = 'จัดการรถยนต์';
 $pageDesc  = "รถทั้งหมด $total คัน — แก้ไขหรือลบข้อมูลได้จากหน้านี้";
 $activeNav = 'manage';
 require 'includes/admin_header.php';
+echo '<link rel="stylesheet" href="assets/css/particles.css"><script>!function(d){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("pfx-on");setTimeout(function(){window.__pfx||d.classList.remove("pfx-on")},3500)}(document.documentElement)</script><script src="assets/js/particles.js" defer></script>';
 ?>
 
 <div class="toolbar">

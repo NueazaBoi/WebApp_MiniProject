@@ -67,6 +67,7 @@ $pageTitle = 'รายงานสต็อกและมูลค่ารถ
 $pageDesc  = 'สรุปจำนวนรถ มูลค่าสต็อก และการกระจายตามแบรนด์ ประเภท เชื้อเพลิง';
 $activeNav = 'report1';
 require 'includes/admin_header.php';
+echo '<link rel="stylesheet" href="assets/css/particles.css"><script>!function(d){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("pfx-on");setTimeout(function(){window.__pfx||d.classList.remove("pfx-on")},3500)}(document.documentElement)</script><script src="assets/js/particles.js" defer></script>';
 ?>
 
 <div class="toolbar no-print">

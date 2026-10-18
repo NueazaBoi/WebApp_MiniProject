@@ -11,6 +11,7 @@ $flash      = getFlash();
 $nav = [
   'manage'  => ['edit_car.php', '🚘', 'จัดการรถ (แก้ไข/ลบ)'],
   'add'     => ['add_car.php',  '➕', 'เพิ่มรถใหม่'],
+  'orders'  => ['admin_orders.php', '📦', 'จัดการคำสั่งซื้อ'],
   'report1' => ['report1.php',  '📊', 'รายงานสต็อกรถ'],
   'report2' => ['report2.php',  '📅', 'รายงานการจองทดลองขับ'],
 ];

@@ -92,6 +92,7 @@ $pageHeading = 'BUY A CAR';
 $pageDesc    = $car ? ($car['brand_name'] . ' ' . $car['model_name']) : 'ไม่พบรถ';
 $activeNav   = '';
 require 'includes/user_header.php';
+echo '<link rel="stylesheet" href="assets/css/particles.css"><script>!function(d){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("pfx-on");setTimeout(function(){window.__pfx||d.classList.remove("pfx-on")},3500)}(document.documentElement)</script><script src="assets/js/particles.js" defer></script>';
 ?>
 
 <?php if (!$car): ?>
