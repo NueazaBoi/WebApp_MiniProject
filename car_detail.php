@@ -24,7 +24,7 @@ if (!$car) { header('Location: search.php'); exit; }
 // ── โมเดล 3D: ใช้ค่าจากฐานข้อมูล ถ้าไม่มีให้ใช้ไฟล์ .glb ตามชื่อรุ่น ──
 $modelUrl = trim($car['model_3d_url'] ?? '');
 if ($modelUrl === '' && stripos($car['model_name'], 'fortuner') !== false) {
-    $modelUrl = 'assets/models/fortuner.glb';
+    $modelUrl = 'assets/models/fortuner_lite.glb';
 }
 
 // ── Booking POST ──

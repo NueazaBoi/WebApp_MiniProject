@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const COLORS = {
   black: 0x0b0b0e, white: 0xf2f2f2, silver: 0xb8bcc2, gray: 0x6b7078, grey: 0x6b7078,
@@ -19,6 +20,65 @@ function parseColor(c) {
   const k = c.toLowerCase();
   for (const n in COLORS) if (k.includes(n)) return COLORS[n];
   return null;
+}
+
+// ทำให้โมเดลเบาขึ้น: (1) แปลงวัสดุหนัก (transmission/specular ฯลฯ) เป็นแบบธรรมดา
+// (2) รวมชิ้นส่วนที่ใช้วัสดุเดียวกันเป็นก้อนเดียว ลดจำนวนครั้งที่ต้องสั่งวาดจาก ~330 เหลือหลักสิบ
+function optimizeCar(src) {
+  const cache = new Map();
+  const convert = m => {
+    if (cache.has(m)) return cache.get(m);
+    const glassy = m.transmission > 0 || m.name === 'Windows' || /Glass/.test(m.name);
+    const isPaint = m.name === 'Ext_CarPaint';
+    const props = {
+      name: m.name, color: m.color, map: m.map, roughness: m.roughness, metalness: m.metalness,
+      roughnessMap: m.roughnessMap, metalnessMap: m.metalnessMap, normalMap: m.normalMap,
+      normalScale: m.normalScale, aoMap: m.aoMap, aoMapIntensity: m.aoMapIntensity,
+      emissive: m.emissive, emissiveMap: m.emissiveMap, emissiveIntensity: m.emissiveIntensity,
+      alphaMap: m.alphaMap, alphaTest: m.alphaTest, side: m.side, vertexColors: m.vertexColors,
+      transparent: m.transparent, opacity: m.opacity, depthWrite: m.depthWrite,
+    };
+    let n;
+    if (isPaint) {
+      n = new THREE.MeshPhysicalMaterial({ ...props, clearcoat: 1, clearcoatRoughness: 0.08 });
+    } else {
+      n = new THREE.MeshStandardMaterial(props);
+    }
+    if (glassy) {
+      n.transparent = true;
+      n.opacity = Math.min(m.opacity < 1 ? m.opacity : 0.3, 0.35);
+      n.depthWrite = false;
+      n.roughness = 0.05;
+    }
+    cache.set(m, n);
+    return n;
+  };
+
+  src.updateMatrixWorld(true);
+  const groups = new Map();
+  const loose = [];
+  src.traverse(o => {
+    if (!o.isMesh) return;
+    const mat = convert(Array.isArray(o.material) ? o.material[0] : o.material);
+    const g = o.geometry.clone();
+    g.applyMatrix4(o.matrixWorld);
+    const key = mat.uuid + '|' + Object.keys(g.attributes).sort().join(',');
+    if (!groups.has(key)) groups.set(key, { mat, geos: [] });
+    groups.get(key).geos.push(g);
+  });
+  const out = new THREE.Group();
+  groups.forEach(({ mat, geos }) => {
+    let merged = null;
+    try { merged = mergeGeometries(geos, false); } catch (e) { merged = null; }
+    if (merged) {
+      const mesh = new THREE.Mesh(merged, mat);
+      mesh.renderOrder = mat.transparent ? 2 : 0;
+      out.add(mesh);
+    } else {
+      geos.forEach(g => { const mesh = new THREE.Mesh(g, mat); mesh.renderOrder = mat.transparent ? 2 : 0; out.add(mesh); });
+    }
+  });
+  return out;
 }
 
 function injectCSS() {
@@ -175,8 +235,8 @@ export function initCar360(root, opt = {}) {
   root.classList.add('c360');
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.shadowMap.enabled = true;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.shadowMap.enabled = !opt.model; // โมเดลจริงใช้เงาปลอมแทน เพื่อให้เบา
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   root.appendChild(renderer.domElement);
@@ -190,7 +250,7 @@ export function initCar360(root, opt = {}) {
 
   const sun = new THREE.DirectionalLight(0xffffff, 1.8);
   sun.position.set(5, 8, 4);
-  sun.castShadow = true;
+  sun.castShadow = !opt.model;
   sun.shadow.mapSize.set(1024, 1024);
   Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6 });
   scene.add(sun, new THREE.HemisphereLight(0x9fd8ee, 0x0a1220, 0.5));
@@ -211,6 +271,17 @@ export function initCar360(root, opt = {}) {
   const ring = new THREE.Mesh(new THREE.RingGeometry(3.4, 3.45, 96).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.6 }));
   ring.position.y = 0.005;
   scene.add(ring);
+  if (opt.model) {
+    // เงาปลอม (ไล่เฉดวงรี) แทนเงาจริงที่กินเครื่อง
+    const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+    const cx = cv.getContext('2d'), gr = cx.createRadialGradient(64, 64, 4, 64, 64, 64);
+    gr.addColorStop(0, 'rgba(0,0,0,.65)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    cx.fillStyle = gr; cx.fillRect(0, 0, 128, 128);
+    const blob = new THREE.Mesh(new THREE.PlaneGeometry(7.5, 4.2).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthWrite: false }));
+    blob.position.y = 0.01;
+    scene.add(blob);
+  }
 
   // รถ
   // พิกัดในโมเดล Fortuner (หน่วยเมตร พื้น y≈0.49 หน้ารถ +z พวงมาลัยขวา) — ใช้ data-eye="x,y,z" ปรับตำแหน่งตาคนขับได้
@@ -238,7 +309,7 @@ export function initCar360(root, opt = {}) {
   if (opt.model) {
     root.appendChild(loadEl);
     const pct = loadEl.querySelector('.pct'), bar_ = loadEl.querySelector('b');
-    new GLTFLoader().load(opt.model, gltf => {
+    const startLoad = () => new GLTFLoader().load(opt.model, gltf => {
       car = gltf.scene;
       // ปรับขนาดให้ยาว 4.8 ม. วางบนพื้น กึ่งกลางที่ 0,0
       const bb = new THREE.Box3().setFromObject(car);
@@ -252,20 +323,19 @@ export function initCar360(root, opt = {}) {
       // สีตัวถัง (ถ้าไม่ใช่สีดำซึ่งเป็นสีเดิมของโมเดล)
       car.traverse(o => {
         if (!o.isMesh) return;
-        o.castShadow = true;
-        o.receiveShadow = true;
         const mats = Array.isArray(o.material) ? o.material : [o.material];
         mats.forEach(m => {
           if (m.name === 'Ext_CarPaint' && paintHex != null && paintHex !== 0x0b0b0e) {
             m.color.set(paintHex);
             m.metalness = 0.6;
           }
-          if (m.map) m.map.anisotropy = 4;
         });
       });
+      const offset = car.position.clone();
+      car = optimizeCar(car);
       scene.add(car);
-      eye.copy(EYE_MODEL).add(car.position);
-      cabinLight.position.set(0, 1.95, -3.0).add(car.position);
+      eye.copy(EYE_MODEL).add(offset);
+      cabinLight.position.set(0, 1.95, -3.0).add(offset);
       cabinLight.intensity = 8;
       target.set(0, 0.9, 0);
       loadEl.style.opacity = 0;
@@ -279,6 +349,9 @@ export function initCar360(root, opt = {}) {
       useProcedural();
       note('โหลดโมเดลไม่สำเร็จ: ' + new URL(opt.model, location.href).href + ' (กด F12 ดูแท็บ Network/Console)');
     });
+    // รอให้หน้าเว็บโหลดเสร็จก่อน ค่อยเริ่มโหลดโมเดล เพื่อไม่ให้หน้าค้าง
+    const go = () => (window.requestIdleCallback ? requestIdleCallback(startLoad, { timeout: 1500 }) : setTimeout(startLoad, 300));
+    if (document.readyState === 'complete') go(); else window.addEventListener('load', go, { once: true });
   } else {
     useProcedural();
     note('ไม่ได้ระบุไฟล์โมเดล (data-model ว่าง) จึงแสดงโมเดลสำรอง');
@@ -371,7 +444,21 @@ export function initCar360(root, opt = {}) {
   new ResizeObserver(resize).observe(root);
   resize();
 
+  let visible = true;
+  new IntersectionObserver(en => { visible = en[0].isIntersecting; }).observe(root);
+  // ถ้าเครื่องช้า จะค่อยๆ ลดความละเอียดการวาดให้เอง
+  let dpr = Math.min(window.devicePixelRatio || 1, 1.5), tAcc = 0, tN = 0, tLast = performance.now();
   renderer.setAnimationLoop(() => {
+    if (!visible || document.hidden) { tLast = performance.now(); return; }
+    const now = performance.now(), dt = now - tLast;
+    tLast = now;
+    if (dt < 250) {
+      tAcc += dt; tN++;
+      if (tN === 30) {
+        if (tAcc / 30 > 24 && dpr > 0.6) { dpr = Math.max(0.6, dpr - 0.25); renderer.setPixelRatio(dpr); resize(); }
+        tAcc = 0; tN = 0;
+      }
+    }
     if (mode === 'out') {
       if (!pts.size && performance.now() - lastAct > 2500) theta -= 0.004;
       camera.fov = 40;
