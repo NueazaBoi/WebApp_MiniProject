@@ -24,7 +24,7 @@ if (!$car) { header('Location: search.php'); exit; }
 // ── โมเดล 3D: ใช้ค่าจากฐานข้อมูล ถ้าไม่มีให้ใช้ไฟล์ .glb ตามชื่อรุ่น ──
 $modelUrl = trim($car['model_3d_url'] ?? '');
 if ($modelUrl === '' && stripos($car['model_name'], 'fortuner') !== false) {
-    $modelUrl = 'assets/models/fortuner.glb';
+    $modelUrl = 'assets/models/fortuner_lite.glb';
 }
 
 // ── Booking POST ──
@@ -76,9 +76,7 @@ $related = $related->fetchAll();
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/search.css">
-  <link rel="stylesheet" href="assets/css/particles.css">
-  <script>!function(d){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("pfx-on");setTimeout(function(){window.__pfx||d.classList.remove("pfx-on")},3500)}(document.documentElement)</script>
-  <script src="assets/js/particles.js" defer></script>
+
 
   <!-- ES Module Import Map สำหรับ Three.js -->
   <script type="importmap">
@@ -186,7 +184,7 @@ $related = $related->fetchAll();
       </div>
       <?php if ($modelUrl !== ''): ?>
       <div style="font-size:.7rem;color:#8aa3b2;margin:8px 4px 0;text-align:right;">
-        3D model: "2025 Toyota Fortuner Sigma 4 Neo Drive" by Ddiaz Design (CC BY-NC-SA 4.0)
+        โมเดล 3D เสมือนจริง 360° • <?= htmlspecialchars($car['brand_name'].' '.$car['model_name']) ?>
       </div>
       <?php endif; ?>
 

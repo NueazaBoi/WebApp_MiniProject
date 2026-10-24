@@ -1,7 +1,6 @@
 // CarVerse 360° viewer — ภายนอก (หมุนรอบคัน) + ภายใน (มองรอบห้องโดยสาร)
 // ใช้ Three.js ผ่าน importmap (ดูวิธีใส่ใน car_detail.php)
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
@@ -21,12 +20,35 @@ function parseColor(c) {
   return null;
 }
 
+// ปรับแต่งโมเดลให้แสดงผลรวดเร็วและลื่นไหล:
+// ปรับแต่ง Material โดยตรงแบบ In-Place (ไม่ Clone Geometry หรือ Merge ใน JS เพื่อไม่ให้บล็อก CPU Main Thread)
+function optimizeCar(src) {
+  src.traverse(o => {
+    if (!o.isMesh) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    mats.forEach(m => {
+      if (!m) return;
+      const glassy = m.transmission > 0 || m.name === 'Windows' || /Glass/i.test(m.name);
+      if (glassy) {
+        m.transparent = true;
+        m.opacity = Math.min(m.opacity < 1 ? m.opacity : 0.3, 0.35);
+        m.depthWrite = false;
+        m.roughness = 0.05;
+      }
+    });
+    o.castShadow = false;
+    o.receiveShadow = false;
+    o.frustumCulled = true;
+  });
+  return src;
+}
+
 function injectCSS() {
   if (document.getElementById('c360-css')) return;
   const s = document.createElement('style');
   s.id = 'c360-css';
   s.textContent = `
-.c360{position:relative;width:100%;height:100%;min-height:420px;overflow:hidden;border-radius:inherit;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.c360{position:relative;width:100%;height:100%;min-height:200px;overflow:hidden;border-radius:inherit;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
 .c360.grab{cursor:grabbing}
 .c360 canvas{width:100%;height:100%;display:block}
 .c360-tabs{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;gap:6px;padding:5px;border-radius:999px;background:rgba(6,16,28,.65);border:1px solid rgba(34,211,238,.35);backdrop-filter:blur(8px)}
@@ -41,7 +63,11 @@ function injectCSS() {
 .c360-note{position:absolute;left:50%;top:60px;transform:translateX(-50%);max-width:90%;padding:6px 14px;border-radius:10px;font:500 12px inherit;font-family:inherit;color:#ffd0d0;background:rgba(120,20,20,.75);border:1px solid rgba(255,100,100,.5);pointer-events:none;text-align:center}
 .c360-fade{position:absolute;inset:0;background:#02060c;opacity:0;pointer-events:none;transition:opacity .25s}
 .c360-fade.on{opacity:1}
-@media(max-width:600px){.c360{min-height:320px}.c360-hint{font-size:11px}}
+.c360-mini{min-height:100% !important;height:100% !important}
+.c360-mini .c360-tabs, .c360-mini .c360-fs, .c360-mini .c360-hint, .c360-mini .c360-badge, .c360-mini .c360-note{display:none !important;visibility:hidden !important;opacity:0 !important;pointer-events:none !important}
+.c360-mini .c360-load{font-size:10px;top:50%;left:50%;transform:translate(-50%,-50%);}
+.c360-mini .c360-load i{width:70px;height:3px}
+@media(max-width:600px){.c360{min-height:260px}.c360-hint{font-size:11px}}
 `;
   document.head.appendChild(s);
 }
@@ -170,13 +196,15 @@ function buildCar(paintHex) {
 }
 
 export function initCar360(root, opt = {}) {
+  const isMini = (opt.mini === '1' || root.dataset.mini === '1' || !!root.closest('.car-card') || !!root.closest('.car-card-3d') || (root.clientHeight > 0 && root.clientHeight < 320));
   injectCSS();
   root.innerHTML = '';
   root.classList.add('c360');
+  if (isMini) root.classList.add('c360-mini');
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.shadowMap.enabled = true;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMini ? 1.25 : 1.5));
+  renderer.shadowMap.enabled = !opt.model; // โมเดลจริงใช้เงาปลอมแทน เพื่อให้เบา
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   root.appendChild(renderer.domElement);
@@ -184,13 +212,16 @@ export function initCar360(root, opt = {}) {
 
   const scene = new THREE.Scene();
   const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  const roomEnv = new RoomEnvironment();
+  scene.environment = pmrem.fromScene(roomEnv, 0.04).texture;
+  pmrem.dispose();
+  roomEnv.dispose();
 
-  const camera = new THREE.PerspectiveCamera(40, 1, 0.05, 100);
+  const camera = new THREE.PerspectiveCamera(isMini ? 30 : 40, 1, 0.05, 100);
 
   const sun = new THREE.DirectionalLight(0xffffff, 1.8);
   sun.position.set(5, 8, 4);
-  sun.castShadow = true;
+  sun.castShadow = !opt.model;
   sun.shadow.mapSize.set(1024, 1024);
   Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6 });
   scene.add(sun, new THREE.HemisphereLight(0x9fd8ee, 0x0a1220, 0.5));
@@ -205,15 +236,25 @@ export function initCar360(root, opt = {}) {
   scene.add(floor);
   const grid = new THREE.GridHelper(18, 36, 0x22d3ee, 0x0e4a5c);
   grid.material.transparent = true;
-  grid.material.opacity = 0.22;
+  grid.material.opacity = isMini ? 0.15 : 0.22;
   grid.position.y = 0.001;
   scene.add(grid);
-  const ring = new THREE.Mesh(new THREE.RingGeometry(3.4, 3.45, 96).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.6 }));
+  const ring = new THREE.Mesh(new THREE.RingGeometry(3.4, 3.45, 96).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: isMini ? 0.4 : 0.6 }));
   ring.position.y = 0.005;
   scene.add(ring);
+  if (opt.model) {
+    // เงาปลอม (ไล่เฉดวงรี) แทนเงาจริงที่กินเครื่อง
+    const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+    const cx = cv.getContext('2d'), gr = cx.createRadialGradient(64, 64, 4, 64, 64, 64);
+    gr.addColorStop(0, 'rgba(0,0,0,.65)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    cx.fillStyle = gr; cx.fillRect(0, 0, 128, 128);
+    const blob = new THREE.Mesh(new THREE.PlaneGeometry(7.5, 4.2).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthWrite: false }));
+    blob.position.y = 0.01;
+    scene.add(blob);
+  }
 
   // รถ
-  // พิกัดในโมเดล Fortuner (หน่วยเมตร พื้น y≈0.49 หน้ารถ +z พวงมาลัยขวา) — ใช้ data-eye="x,y,z" ปรับตำแหน่งตาคนขับได้
   const EYE_MODEL = new THREE.Vector3(-0.38, 1.78, -2.45);
   if (opt.eye) { const e = opt.eye.split(',').map(Number); if (e.length === 3 && e.every(isFinite)) EYE_MODEL.set(...e); }
   const eye = new THREE.Vector3(-0.45, 1.62, 0.18);
@@ -233,43 +274,43 @@ export function initCar360(root, opt = {}) {
 
   const loadEl = document.createElement('div');
   loadEl.className = 'c360-load';
-  loadEl.innerHTML = '<span>กำลังโหลดโมเดล 3D… <span class="pct">0%</span></span><i><b></b></i>';
+  loadEl.innerHTML = '<span>กำลังโหลด 3D… <span class="pct">0%</span></span><i><b></b></i>';
 
   if (opt.model) {
     root.appendChild(loadEl);
     const pct = loadEl.querySelector('.pct'), bar_ = loadEl.querySelector('b');
-    new GLTFLoader().load(opt.model, gltf => {
+    const startLoad = () => new GLTFLoader().load(opt.model, gltf => {
       car = gltf.scene;
-      // ปรับขนาดให้ยาว 4.8 ม. วางบนพื้น กึ่งกลางที่ 0,0
+      // ปรับขนาดให้พอดี วางบนพื้น กึ่งกลางที่ 0,0 สำหรับทุกโมเดล
       const bb = new THREE.Box3().setFromObject(car);
       const size = bb.getSize(new THREE.Vector3());
-      car.scale.setScalar(4.8 / Math.max(size.x, size.z));
+      const maxDim = Math.max(size.x, size.y, size.z) || 4.8;
+      car.scale.setScalar(4.8 / maxDim);
       car.updateMatrixWorld(true);
       const bb2 = new THREE.Box3().setFromObject(car);
       const c = bb2.getCenter(new THREE.Vector3());
       car.position.set(-c.x, -bb2.min.y, -c.z);
       car.updateMatrixWorld(true);
-      // สีตัวถัง (ถ้าไม่ใช่สีดำซึ่งเป็นสีเดิมของโมเดล)
+      // สีตัวถัง (ถ้ามีระบุสี)
       car.traverse(o => {
         if (!o.isMesh) return;
-        o.castShadow = true;
-        o.receiveShadow = true;
         const mats = Array.isArray(o.material) ? o.material : [o.material];
         mats.forEach(m => {
-          if (m.name === 'Ext_CarPaint' && paintHex != null && paintHex !== 0x0b0b0e) {
+          if (m && m.name === 'Ext_CarPaint' && paintHex != null && paintHex !== 0x0b0b0e) {
             m.color.set(paintHex);
             m.metalness = 0.6;
           }
-          if (m.map) m.map.anisotropy = 4;
         });
       });
+      const offset = car.position.clone();
+      car = optimizeCar(car);
       scene.add(car);
-      eye.copy(EYE_MODEL).add(car.position);
-      cabinLight.position.set(0, 1.95, -3.0).add(car.position);
+      eye.copy(EYE_MODEL).add(offset);
+      cabinLight.position.set(0, 1.95, -3.0).add(offset);
       cabinLight.intensity = 8;
-      target.set(0, 0.9, 0);
+      target.set(0, isMini ? 0.35 : 0.9, 0);
       loadEl.style.opacity = 0;
-      setTimeout(() => loadEl.remove(), 500);
+      setTimeout(() => loadEl.remove(), 400);
     }, ev => {
       if (ev.total) { const p = Math.round(ev.loaded / ev.total * 100); pct.textContent = p + '%'; bar_.style.width = p + '%'; }
       else pct.textContent = (ev.loaded / 1048576).toFixed(0) + ' MB';
@@ -277,31 +318,37 @@ export function initCar360(root, opt = {}) {
       console.warn('โหลดโมเดล GLB ไม่สำเร็จ ใช้โมเดลสำรองแทน', err);
       loadEl.remove();
       useProcedural();
-      note('โหลดโมเดลไม่สำเร็จ: ' + new URL(opt.model, location.href).href + ' (กด F12 ดูแท็บ Network/Console)');
+      if (!isMini) note('โหลดโมเดลไม่สำเร็จ: ' + new URL(opt.model, location.href).href);
     });
+
+    startLoad();
   } else {
     useProcedural();
-    note('ไม่ได้ระบุไฟล์โมเดล (data-model ว่าง) จึงแสดงโมเดลสำรอง');
+    if (!isMini) note('ไม่ได้ระบุไฟล์โมเดล (data-model ว่าง) จึงแสดงโมเดลสำรอง');
   }
 
-  // UI
+  // UI (ถ้าเป็นโหมด Mini บนการ์ด ไม่ต้องใส่ข้อความใดๆ โชว์แค่ตัวรถล้วนๆ)
   const ui = document.createElement('div');
-  ui.innerHTML = `
-    <div class="c360-badge">360°</div>
-    <div class="c360-hint"></div>
-    <div class="c360-tabs"><button data-m="out" class="on">🚗 ภายนอก</button><button data-m="in">🪑 ภายใน</button></div>
-    <button class="c360-fs" title="เต็มจอ">⛶</button>
-    <div class="c360-fade"></div>`;
+  if (isMini) {
+    ui.innerHTML = `<div class="c360-fade"></div>`;
+  } else {
+    ui.innerHTML = `
+      <div class="c360-badge">360°</div>
+      <div class="c360-hint"></div>
+      <div class="c360-tabs"><button data-m="out" class="on">🚗 ภายนอก</button><button data-m="in">🪑 ภายใน</button></div>
+      <button class="c360-fs" title="เต็มจอ">⛶</button>
+      <div class="c360-fade"></div>`;
+  }
   while (ui.firstChild) root.appendChild(ui.firstChild);
   const hint = root.querySelector('.c360-hint');
   const fade = root.querySelector('.c360-fade');
   const tabs = [...root.querySelectorAll('.c360-tabs button')];
   const HINTS = { out: 'ลากเพื่อหมุนรอบคัน • เลื่อนล้อเมาส์/ถ่างนิ้วเพื่อซูม', in: 'ลากเพื่อมองรอบห้องโดยสาร 360° • เลื่อนล้อเพื่อซูม' };
-  hint.textContent = HINTS.out;
+  if (hint) hint.textContent = HINTS.out;
 
-  // ตัวควบคุมกล้อง
-  let mode = 'out', theta = 0.6, phi = 1.2, radius = 8, yaw = 0, pitch = 0, fovIn = 75, lastAct = 0;
-  const target = new THREE.Vector3(0, 0.9, 0);
+  // ตัวควบคุมกล้อง: ถอยกล้องออกห่างพอดีๆ และโฟกัสกลางตัวถังรถ
+  let mode = 'out', theta = 0.6, phi = isMini ? 1.25 : 1.25, radius = isMini ? 11.2 : 8, yaw = 0, pitch = 0, fovIn = 75, lastAct = 0;
+  const target = new THREE.Vector3(0, isMini ? 0.35 : 0.9, 0);
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const pts = new Map();
   let pinch = 0;
@@ -311,8 +358,13 @@ export function initCar360(root, opt = {}) {
     else { yaw += dx * 0.005 * (fovIn / 75); pitch = clamp(pitch + dy * 0.005 * (fovIn / 75), -1.3, 1.3); }
   }
   function zoom(k) {
-    if (mode === 'out') radius = clamp(radius * (1 + k * 0.5), 4.5, 12);
-    else fovIn = clamp(fovIn * (1 + k * 0.5), 40, 95);
+    if (mode === 'out') {
+      radius = clamp(radius * (1 + k * 0.5), 4.5, 12);
+    } else {
+      fovIn = clamp(fovIn * (1 + k * 0.5), 40, 95);
+      camera.fov = fovIn;
+      camera.updateProjectionMatrix();
+    }
   }
   dom.addEventListener('pointerdown', e => {
     dom.setPointerCapture(e.pointerId);
@@ -339,7 +391,9 @@ export function initCar360(root, opt = {}) {
   const end = e => { pts.delete(e.pointerId); pinch = 0; if (!pts.size) root.classList.remove('grab'); };
   dom.addEventListener('pointerup', end);
   dom.addEventListener('pointercancel', end);
-  dom.addEventListener('wheel', e => { e.preventDefault(); lastAct = performance.now(); zoom(e.deltaY * 0.001); }, { passive: false });
+  if (!isMini) {
+    dom.addEventListener('wheel', e => { e.preventDefault(); lastAct = performance.now(); zoom(e.deltaY * 0.001); }, { passive: false });
+  }
 
   function setMode(m) {
     if (m === mode) return;
@@ -349,18 +403,26 @@ export function initCar360(root, opt = {}) {
       cabinLight.visible = m === 'in';
       hint.textContent = HINTS[m];
       tabs.forEach(b => b.classList.toggle('on', b.dataset.m === m));
-      if (m === 'in') { yaw = 0; pitch = 0; }
+      if (m === 'in') {
+        yaw = 0; pitch = 0;
+        camera.fov = fovIn;
+      } else {
+        camera.fov = 40;
+      }
+      camera.updateProjectionMatrix();
       fade.classList.remove('on');
     }, 250);
   }
   tabs.forEach(b => b.addEventListener('click', e => { e.stopPropagation(); setMode(b.dataset.m); }));
   tabs.forEach(b => b.addEventListener('pointerdown', e => e.stopPropagation()));
   const fs = root.querySelector('.c360-fs');
-  fs.addEventListener('pointerdown', e => e.stopPropagation());
-  fs.addEventListener('click', () => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else root.requestFullscreen && root.requestFullscreen();
-  });
+  if (fs) {
+    fs.addEventListener('pointerdown', e => e.stopPropagation());
+    fs.addEventListener('click', () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else root.requestFullscreen && root.requestFullscreen();
+    });
+  }
 
   function resize() {
     const w = root.clientWidth || 600, h = root.clientHeight || 420;
@@ -371,21 +433,26 @@ export function initCar360(root, opt = {}) {
   new ResizeObserver(resize).observe(root);
   resize();
 
+  let visible = true;
+  new IntersectionObserver(en => { visible = en[0].isIntersecting; }).observe(root);
+
   renderer.setAnimationLoop(() => {
+    if (!visible || document.hidden) return;
     if (mode === 'out') {
-      if (!pts.size && performance.now() - lastAct > 2500) theta -= 0.004;
-      camera.fov = 40;
+      if (isMini) {
+        if (!pts.size) theta -= 0.005; // หมุนอัตโนมัตินุ่มๆ บนการ์ดหน้ารายการค้นหา
+      } else {
+        if (!pts.size && performance.now() - lastAct > 2500) theta -= 0.004;
+      }
       camera.position.set(
         target.x + radius * Math.sin(phi) * Math.sin(theta),
         target.y + radius * Math.cos(phi),
         target.z + radius * Math.sin(phi) * Math.cos(theta));
       camera.lookAt(target);
     } else {
-      camera.fov = fovIn;
       camera.position.copy(eye);
       camera.rotation.set(pitch, Math.PI + yaw, 0, 'YXZ');
     }
-    camera.updateProjectionMatrix();
     renderer.render(scene, camera);
   });
 
@@ -394,5 +461,10 @@ export function initCar360(root, opt = {}) {
 
 // เริ่มอัตโนมัติกับทุก element ที่มี data-car360
 document.querySelectorAll('[data-car360]').forEach(el => {
-  initCar360(el, { color: el.dataset.color, model: el.dataset.model, eye: el.dataset.eye });
+  initCar360(el, {
+    color: el.dataset.color,
+    model: el.dataset.model,
+    eye: el.dataset.eye,
+    mini: el.dataset.mini
+  });
 });

@@ -103,8 +103,26 @@ $pageHeading = 'ค้นหา <span class="text-accent">รถยนต์</sp
 $pageDesc    = 'รถยนต์พรีเมียมกว่า ' . $totalCount . ' คันรอให้คุณค้นพบ';
 $activeNav   = 'search';
 require 'includes/user_header.php';
-echo '<link rel="stylesheet" href="assets/css/particles.css"><script>!function(d){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("pfx-on");setTimeout(function(){window.__pfx||d.classList.remove("pfx-on")},3500)}(document.documentElement)</script><script src="assets/js/particles.js" defer></script>';
 ?>
+<!-- Three.js + 3D Car Viewer Module -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="assets/js/car_viewer.js?v=<?= filemtime('assets/js/car_viewer.js') ?>"></script>
+<style>
+  .car-card .c360-hint, .car-card .c360-badge, .car-card .c360-tabs, .car-card .c360-fs,
+  .c360-mini .c360-hint, .c360-mini .c360-badge, .c360-mini .c360-tabs, .c360-mini .c360-fs {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+</style>
 
 <?php if ($bookMsg):  ?><div class="alert alert-success" data-autohide="6000">✅ <?= e($bookMsg)  ?></div><?php endif; ?>
 <?php if ($bookError):?><div class="alert alert-danger"  data-autohide="6000">❌ <?= e($bookError)?></div><?php endif; ?>
@@ -213,10 +231,20 @@ echo '<link rel="stylesheet" href="assets/css/particles.css"><script>!function(d
       <?php else: ?>
 
       <div class="car-grid">
-        <?php foreach ($cars as $i => $car): ?>
+        <?php foreach ($cars as $i => $car): 
+          $m3dUrl = $car['model_3d_url'] ?: (stripos($car['model_name'], 'fortuner') !== false ? 'assets/models/fortuner_lite.glb' : '');
+        ?>
         <div class="car-card">
-          <div style="position:relative;overflow:hidden;height:200px;background:var(--clr-surface);">
-            <?php if ($car['image_url']): ?>
+          <div style="position:relative;overflow:hidden;height:270px;background:var(--clr-surface);">
+            <?php if ($m3dUrl): ?>
+              <div class="car-card-3d"
+                   data-car360
+                   data-mini="1"
+                   data-color="<?= e($car['color'] ?? '') ?>"
+                   data-model="<?= e($m3dUrl) ?>"
+                   style="width:100%;height:100%;">
+              </div>
+            <?php elseif ($car['image_url']): ?>
               <img src="<?= e($car['image_url']) ?>" alt="<?= e($car['model_name']) ?>" class="car-card-img">
             <?php else: ?>
               <div class="car-placeholder">
@@ -226,12 +254,10 @@ echo '<link rel="stylesheet" href="assets/css/particles.css"><script>!function(d
                 </svg>
               </div>
             <?php endif; ?>
-            <span class="badge badge-<?= $car['status'] ?>" style="position:absolute;top:10px;right:10px;">
+            <span class="badge badge-<?= $car['status'] ?>" style="position:absolute;top:10px;right:10px;z-index:5;">
               <?= ['available'=>'พร้อมขาย','sold'=>'ขายแล้ว','reserved'=>'จอง'][$car['status']] ?? $car['status'] ?>
             </span>
-            <?php if ($car['model_3d_url']): ?>
-            <span style="position:absolute;top:10px;left:10px;background:rgba(26,108,245,0.8);color:#fff;font-size:0.7rem;padding:3px 8px;border-radius:12px;font-weight:600;">3D</span>
-            <?php endif; ?>
+
           </div>
           <div class="car-card-body">
             <div class="car-card-brand"><?= e($car['brand_name']) ?> · <?= e($car['type_name']) ?></div>
