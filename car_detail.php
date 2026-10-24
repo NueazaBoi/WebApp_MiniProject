@@ -175,12 +175,18 @@ $related = $related->fetchAll();
           <?= STATUS_LABELS[$car['status']] ?? $car['status'] ?>
         </span>
         
+        <?php if ($modelUrl !== ''): ?>
         <!-- Element สำหรับเริ่มทำงานกับ car_viewer.js -->
         <div data-car360 
              data-color="<?= htmlspecialchars($car['color'] ?? '') ?>" 
              data-model="<?= htmlspecialchars($modelUrl) ?>"
              style="width:100%;height:100%;">
         </div>
+        <?php elseif (!empty($car['image_url'])): ?>
+        <img src="<?= htmlspecialchars($car['image_url']) ?>" alt="<?= htmlspecialchars($car['model_name']) ?>" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:20px;">
+        <?php else: ?>
+        <div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;opacity:.3;">🚗</div>
+        <?php endif; ?>
       </div>
       <?php if ($modelUrl !== ''): ?>
       <div style="font-size:.7rem;color:#8aa3b2;margin:8px 4px 0;text-align:right;">

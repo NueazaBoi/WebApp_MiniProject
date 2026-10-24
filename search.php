@@ -104,25 +104,7 @@ $pageDesc    = 'รถยนต์พรีเมียมกว่า ' . $tota
 $activeNav   = 'search';
 require 'includes/user_header.php';
 ?>
-<!-- Three.js + 3D Car Viewer Module -->
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-  }
-}
-</script>
-<script type="module" src="assets/js/car_viewer.js?v=<?= filemtime('assets/js/car_viewer.js') ?>"></script>
-<style>
-  .car-card .c360-hint, .car-card .c360-badge, .car-card .c360-tabs, .car-card .c360-fs,
-  .c360-mini .c360-hint, .c360-mini .c360-badge, .c360-mini .c360-tabs, .c360-mini .c360-fs {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-</style>
+
 
 <?php if ($bookMsg):  ?><div class="alert alert-success" data-autohide="6000">✅ <?= e($bookMsg)  ?></div><?php endif; ?>
 <?php if ($bookError):?><div class="alert alert-danger"  data-autohide="6000">❌ <?= e($bookError)?></div><?php endif; ?>
@@ -232,20 +214,12 @@ require 'includes/user_header.php';
 
       <div class="car-grid">
         <?php foreach ($cars as $i => $car): 
-          $m3dUrl = $car['model_3d_url'] ?: (stripos($car['model_name'], 'fortuner') !== false ? 'assets/models/fortuner_lite.glb' : '');
+          $has3d = !empty($car['model_3d_url']) || (stripos($car['model_name'], 'fortuner') !== false);
         ?>
         <div class="car-card">
-          <div style="position:relative;overflow:hidden;height:270px;background:var(--clr-surface);">
-            <?php if ($m3dUrl): ?>
-              <div class="car-card-3d"
-                   data-car360
-                   data-mini="1"
-                   data-color="<?= e($car['color'] ?? '') ?>"
-                   data-model="<?= e($m3dUrl) ?>"
-                   style="width:100%;height:100%;">
-              </div>
-            <?php elseif ($car['image_url']): ?>
-              <img src="<?= e($car['image_url']) ?>" alt="<?= e($car['model_name']) ?>" class="car-card-img">
+          <div style="position:relative;overflow:hidden;height:240px;background:var(--clr-surface);">
+            <?php if (!empty($car['image_url'])): ?>
+              <img src="<?= e($car['image_url']) ?>" alt="<?= e($car['model_name']) ?>" class="car-card-img" loading="lazy">
             <?php else: ?>
               <div class="car-placeholder">
                 <svg width="56" height="56" fill="none" stroke="rgba(232,184,75,0.3)" stroke-width="1.5" viewBox="0 0 24 24">
@@ -254,10 +228,14 @@ require 'includes/user_header.php';
                 </svg>
               </div>
             <?php endif; ?>
+            <?php if ($has3d): ?>
+              <span class="badge" style="position:absolute;top:10px;left:10px;z-index:5;background:rgba(31,200,255,0.22);border:1px solid #1fc8ff;color:#1fc8ff;font-size:0.75rem;padding:4px 8px;border-radius:6px;backdrop-filter:blur(6px);font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+                🧊 โมเดล 3D
+              </span>
+            <?php endif; ?>
             <span class="badge badge-<?= $car['status'] ?>" style="position:absolute;top:10px;right:10px;z-index:5;">
               <?= ['available'=>'พร้อมขาย','sold'=>'ขายแล้ว','reserved'=>'จอง'][$car['status']] ?? $car['status'] ?>
             </span>
-
           </div>
           <div class="car-card-body">
             <div class="car-card-brand"><?= e($car['brand_name']) ?> · <?= e($car['type_name']) ?></div>
