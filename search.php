@@ -215,11 +215,12 @@ require 'includes/user_header.php';
       <div class="car-grid">
         <?php foreach ($cars as $i => $car): 
           $has3d = !empty($car['model_3d_url']) || (stripos($car['model_name'], 'fortuner') !== false);
+          $carImg = function_exists('carImage') ? carImage($car) : (!empty($car['image_url']) ? $car['image_url'] : '');
         ?>
         <div class="car-card">
           <div style="position:relative;overflow:hidden;height:240px;background:var(--clr-surface);">
-            <?php if (!empty($car['image_url'])): ?>
-              <img src="<?= e($car['image_url']) ?>" alt="<?= e($car['model_name']) ?>" class="car-card-img" loading="lazy">
+            <?php if (!empty($carImg)): ?>
+              <img src="<?= e($carImg) ?>" alt="<?= e($car['model_name']) ?>" class="car-card-img" loading="lazy">
             <?php else: ?>
               <div class="car-placeholder">
                 <svg width="56" height="56" fill="none" stroke="rgba(232,184,75,0.3)" stroke-width="1.5" viewBox="0 0 24 24">

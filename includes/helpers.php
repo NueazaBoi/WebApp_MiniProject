@@ -97,3 +97,29 @@ function validateCar(array $in): array {
     if (!isset(STATUS_LABELS[$d['status']]))       $d['status']       = 'available';
     return [$errors, $d];
 }
+
+/** คืนค่า image_url ของรถ ถ้าไม่มีใน DB ให้ตรวจจับไฟล์รูปที่ตรงกับรุ่นรถจาก uploads/cars/ อัตโนมัติ */
+function carImage($car): string {
+    $img = is_array($car) ? ($car['image_url'] ?? '') : ($car ?? '');
+    if (!empty($img) && is_file(__DIR__ . '/../' . $img)) return $img;
+    
+    $name = strtolower(is_array($car) ? ($car['model_name'] ?? '') : (string)$car);
+    if (strpos($name, 'fortuner') !== false) {
+        return (strpos($name, 'sigma') !== false) ? 'uploads/cars/toyota_fortuner_sigma4.jpg' : 'uploads/cars/toyota_fortuner.jpg';
+    }
+    if (strpos($name, 'cla') !== false) return 'uploads/cars/mercedes_cla.jpg';
+    if (strpos($name, '220') !== false) return 'uploads/cars/mercedes_c220d.jpg';
+    if (strpos($name, 'c300') !== false) return 'uploads/cars/mercedes_c300.jpg';
+    if (strpos($name, 'cx-30') !== false || strpos($name, 'cx30') !== false) return 'uploads/cars/mazda_cx30.jpg';
+    if (strpos($name, 'mazda3') !== false || strpos($name, 'mazda 3') !== false) return 'uploads/cars/mazda3_sedan.jpg';
+    if (strpos($name, 'civic') !== false) {
+        $type = strtolower(is_array($car) ? ($car['type_name'] ?? '') : '');
+        return ($type === 'hatchback' || strpos($name, 'hatchback') !== false)
+            ? 'uploads/cars/honda_civic_hatchback.jpg' 
+            : 'uploads/cars/honda_civic.jpg';
+    }
+    if (strpos($name, 'm4') !== false) return 'uploads/cars/bmw_m4.jpg';
+    if (strpos($name, 'model 3') !== false || strpos($name, 'tesla') !== false) return 'uploads/cars/tesla_model3.jpg';
+    return !empty($img) ? $img : '';
+}
+

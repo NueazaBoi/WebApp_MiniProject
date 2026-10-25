@@ -182,8 +182,8 @@ $related = $related->fetchAll();
              data-model="<?= htmlspecialchars($modelUrl) ?>"
              style="width:100%;height:100%;">
         </div>
-        <?php elseif (!empty($car['image_url'])): ?>
-        <img src="<?= htmlspecialchars($car['image_url']) ?>" alt="<?= htmlspecialchars($car['model_name']) ?>" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:20px;">
+        <?php elseif (!empty($carImg = function_exists('carImage') ? carImage($car) : (!empty($car['image_url']) ? $car['image_url'] : ''))): ?>
+        <img src="<?= htmlspecialchars($carImg) ?>" alt="<?= htmlspecialchars($car['model_name']) ?>" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:20px;">
         <?php else: ?>
         <div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;opacity:.3;">🚗</div>
         <?php endif; ?>
@@ -232,8 +232,11 @@ $related = $related->fetchAll();
           <?php foreach ($related as $r): ?>
           <a href="car_detail.php?id=<?= $r['car_id'] ?>" class="car-card" style="text-decoration:none;display:block;">
             <div style="height:150px;overflow:hidden;background:rgba(31,200,255,.04);">
-              <?php if ($r['image_url']): ?>
-                <img src="<?= htmlspecialchars($r['image_url']) ?>" alt="<?= htmlspecialchars($r['model_name']) ?>" class="car-card-img" style="height:150px;">
+              <?php 
+                $rImg = function_exists('carImage') ? carImage($r) : (!empty($r['image_url']) ? $r['image_url'] : '');
+              ?>
+              <?php if (!empty($rImg)): ?>
+                <img src="<?= htmlspecialchars($rImg) ?>" alt="<?= htmlspecialchars($r['model_name']) ?>" class="car-card-img" style="height:150px;">
               <?php else: ?>
                 <div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem;opacity:.2;">🚗</div>
               <?php endif; ?>

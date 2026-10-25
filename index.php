@@ -328,8 +328,11 @@ $stats = $pdo->query("
         <a class="cv-card rv" style="--i:<?= (int)$i ?>" href="car_detail.php?id=<?= (int)$car['car_id'] ?>">
           <div class="cv-pic">
             <span class="cv-badge">พร้อมขาย</span>
-            <?php if (!empty($car['image_url'])): ?>
-              <img src="<?= htmlspecialchars($car['image_url']) ?>" alt="<?= htmlspecialchars($car['model_name']) ?>" loading="lazy">
+            <?php 
+              $carImg = function_exists('carImage') ? carImage($car) : (!empty($car['image_url']) ? $car['image_url'] : '');
+            ?>
+            <?php if (!empty($carImg)): ?>
+              <img src="<?= htmlspecialchars($carImg) ?>" alt="<?= htmlspecialchars($car['model_name']) ?>" loading="lazy">
             <?php else: ?>
               <div class="cv-noimg">ไม่มีรูปภาพ</div>
             <?php endif; ?>
